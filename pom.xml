@@ -19,13 +19,16 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<org.projectlombok.version>1.16.4</org.projectlombok.version>
+		<org.testng.version>6.8.8</org.testng.version>
+		<org.easymock.version>3.3.1</org.easymock.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.16.4</version>
+			<version>${org.projectlombok.version}</version>
 		</dependency>
 
 		<!-- Logging dependencies -->
@@ -59,10 +62,6 @@
 					<artifactId>log4j-over-slf4j</artifactId>
 					<groupId>org.slf4j</groupId>
 				</exclusion>
-<!-- 				<exclusion>
-					<artifactId>spring-boot-starter-logging</artifactId>
-					<groupId>org.springframework.boot</groupId>
-				</exclusion> -->
 			</exclusions>
 		</dependency>
 
@@ -81,16 +80,17 @@
 		<dependency>
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
-			<version>6.8.8</version>
+			<version>${org.testng.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.easymock</groupId>
 			<artifactId>easymock</artifactId>
-			<version>3.3.1</version>
+			<version>${org.easymock.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -113,7 +113,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>spongecell.spring.event_logger.EventLoggerApplication</mainClass>
+							<mainClass>spongecell.event.handler.application.EventHandlerResourceApplication</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
