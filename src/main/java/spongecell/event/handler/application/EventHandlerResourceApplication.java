@@ -1,4 +1,4 @@
-package logback_test.org.logger;
+package spongecell.event.handler.application;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;

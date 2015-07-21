@@ -1,4 +1,4 @@
-package logback_test.org.logger;
+package event_handler.logger.test;
 
 
 import lombok.extern.slf4j.Slf4j;
