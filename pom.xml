@@ -89,6 +89,13 @@
 			<version>${org.easymock.version}</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- Event Handler -->
+		<dependency>
+			<groupId>spongecell-spring-libraries.events</groupId>
+			<artifactId>event-handler</artifactId>
+			<version>1.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>

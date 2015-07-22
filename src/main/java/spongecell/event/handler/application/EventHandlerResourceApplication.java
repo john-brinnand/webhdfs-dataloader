@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @SpringBootApplication
 @EnableAutoConfiguration
-@EnableConfigurationProperties()
+@EnableConfigurationProperties(EventHandlerResourceConfiguration.class)
 @EnableWebMvc
 public class EventHandlerResourceApplication {
     public static void main(String[] args) {
