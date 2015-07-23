@@ -3,7 +3,6 @@ package springboot.rest.demo.application;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
 import lombok.extern.slf4j.Slf4j;
