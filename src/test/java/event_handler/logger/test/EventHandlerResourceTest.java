@@ -1,9 +1,6 @@
 package event_handler.logger.test;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-
-import javax.annotation.PostConstruct;
-
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +17,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import spongecell.event.handler.application.EventHandlerResourceConfiguration;
-import spongecell.message.RequestEvent;
-import spongecell.spring.event_handler.EventHandler;
 
 @Slf4j
 @EnableAutoConfiguration
@@ -33,26 +29,10 @@ import spongecell.spring.event_handler.EventHandler;
 @ContextConfiguration(classes = { spongecell.event.handler.application.EventHandlerResourceApplication.class })
 public class EventHandlerResourceTest extends AbstractTestNGSpringContextTests {
 	private String data;
+	private final static String BASE_URI = "/v1/eventHandler";
+	private final static String PING = "ping";
 	@Autowired WebApplicationContext wac;
 	@Autowired EventHandlerResourceConfiguration config;
-	private static final String GROUP = "testGroup";
-	private EventHandler<String, RequestEvent> eventHandler;
-
-	@Test
-	public void testLogger() {
-		log.info("Testing 123");
-		log.info("Here");
-	}
-
-	@PostConstruct
-	public void postConstruct() {
-		// eventHandler = new EventHandler.Builder<String, RequestEvent>()
-		// .keyTranslatorType(String.class)
-		// .valueTranslatorType(RequestEvent.class)
-		// .topic(config.getTopic())
-		// .groupId(GROUP)
-		// .build();
-	}
 
 	@Test(priority = 1, groups = "integration")
 	public void validateEventHandlerPing() throws Exception {
@@ -60,8 +40,7 @@ public class EventHandlerResourceTest extends AbstractTestNGSpringContextTests {
 		data = "Greetings!";
 
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-//				.get("/v1/eventHandler");
-				.get("/v1/eventHandler/ping");
+				.post(BASE_URI + "/" + PING);
 		request.contentType(MediaType.ALL_VALUE);
 		request.content(data);
 
@@ -75,5 +54,6 @@ public class EventHandlerResourceTest extends AbstractTestNGSpringContextTests {
 		log.info("Raw Response - type is {} content is: {} ", mvcResult
 				.getResponse().getContentType(), mvcResult.getResponse()
 				.getContentAsString());
+		Assert.assertEquals(mvcResult.getResponse().getContentAsString(), data);
 	}
 }
