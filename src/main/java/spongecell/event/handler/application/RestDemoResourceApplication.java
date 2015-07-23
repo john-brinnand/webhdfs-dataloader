@@ -8,10 +8,10 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @SpringBootApplication
 @EnableAutoConfiguration
-@EnableConfigurationProperties(EventHandlerResourceConfiguration.class)
+@EnableConfigurationProperties(RestDemoResourceConfiguration.class)
 @EnableWebMvc
-public class EventHandlerResourceApplication {
+public class RestDemoResourceApplication {
     public static void main(String[] args) {
-        SpringApplication.run(EventHandlerResourceApplication.class, args);
+        SpringApplication.run(RestDemoResourceApplication.class, args);
     }	
 }

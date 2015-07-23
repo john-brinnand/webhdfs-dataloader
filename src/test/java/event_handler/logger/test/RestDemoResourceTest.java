@@ -20,19 +20,32 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import spongecell.event.handler.application.EventHandlerResourceConfiguration;
+import spongecell.event.handler.application.RestDemoResourceConfiguration;
 
+/**
+ * Notes: @WebAppConfiguration sets up, among other things,
+ *        the servlet context. Without it, the following error
+ *        occurs: "A ServletContext is required to configure default servlet handling"
+ *        
+ *        @ContextConfiguration - among other things, it loads the application context. 
+ *        If it is not present, the following error occurs:
+ *        "java.lang.IllegalArgumentException: Cannot load an ApplicationContext 
+ *        with a NULL 'contextLoader'. Consider annotating your test class with 
+ *        @ContextConfiguration or @ContextHierarchy.at 
+ *        org.springframework.util.Assert.notNull(Assert.java:112) 
+ *        ~[spring-core-4.1.5.RELEASE.jar:4.1.5.RELEASE]"
+ */
 @Slf4j
 @EnableAutoConfiguration
 @EnableWebMvc
 @WebAppConfiguration
-@ContextConfiguration(classes = { spongecell.event.handler.application.EventHandlerResourceApplication.class })
-public class EventHandlerResourceTest extends AbstractTestNGSpringContextTests {
+@ContextConfiguration(classes = { spongecell.event.handler.application.RestDemoResourceApplication.class })
+public class RestDemoResourceTest extends AbstractTestNGSpringContextTests {
 	private String data;
 	private final static String BASE_URI = "/v1/eventHandler";
 	private final static String PING = "ping";
 	@Autowired WebApplicationContext wac;
-	@Autowired EventHandlerResourceConfiguration config;
+	@Autowired RestDemoResourceConfiguration config;
 
 	@Test(priority = 1, groups = "integration")
 	public void validateEventHandlerPing() throws Exception {

@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties()
 @Setter @Getter
-public class EventHandlerResourceConfiguration {
+public class RestDemoResourceConfiguration {
 	private String  version  = "v1";
 	private String  service  = "event_handler_service";
 	private String  topic    = service + "_" + version;
