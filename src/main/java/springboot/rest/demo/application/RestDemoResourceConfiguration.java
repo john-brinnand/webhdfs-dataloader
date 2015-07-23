@@ -1,4 +1,4 @@
-package spongecell.event.handler.application;
+package springboot.rest.demo.application;
 
 import java.util.UUID;
 

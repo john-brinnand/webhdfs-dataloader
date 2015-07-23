@@ -1,8 +1,9 @@
-package spongecell.event.handler.application;
+package springboot.rest.demo.application;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,24 @@ public class RestDemoHandlerResource {
 			@RequestParam(value = "id") String id) throws Exception {
 		String content = "Greetings " + id  + " from the postRequestParamEndpoint"; 
 		log.info("Returning : {} ", content);
+		ResponseEntity<String> response = new ResponseEntity<String>(content, HttpStatus.OK);
+		return response; 
+	}	
+	
+	@RequestMapping(method = RequestMethod.GET)
+	public ResponseEntity<?> getRequestParamEndpoint(HttpServletRequest request,
+			@RequestParam(value = "id") String id) throws Exception {
+		String content =  id + ":" + "testValue";
+		log.info("Returning {} for id {}", content, id);
+		ResponseEntity<String> response = new ResponseEntity<String>(content, HttpStatus.OK);
+		return response; 
+	}	
+	
+	@RequestMapping(method = RequestMethod.DELETE)
+	public ResponseEntity<?> deleteRequestParamEndpoint(HttpServletRequest request,
+			@RequestParam(value = "id") String id) throws Exception {
+		String content =  "Deleted " + id + ":" + "testValue";
+		log.info("Returning {} for id {}", content, id);
 		ResponseEntity<String> response = new ResponseEntity<String>(content, HttpStatus.OK);
 		return response; 
 	}	

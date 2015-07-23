@@ -1,4 +1,4 @@
-package event_handler.logger.test;
+package sprinboot.rest.demo.test;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import spongecell.event.handler.application.RestDemoResourceConfiguration;
+import springboot.rest.demo.application.RestDemoResourceConfiguration;
 
 /**
  * Notes: @WebAppConfiguration sets up, among other things,
@@ -39,7 +39,7 @@ import spongecell.event.handler.application.RestDemoResourceConfiguration;
 @EnableAutoConfiguration
 @EnableWebMvc
 @WebAppConfiguration
-@ContextConfiguration(classes = { spongecell.event.handler.application.RestDemoResourceApplication.class })
+@ContextConfiguration(classes = { springboot.rest.demo.application.RestDemoResourceApplication.class })
 public class RestDemoResourceTest extends AbstractTestNGSpringContextTests {
 	private String data;
 	private final static String BASE_URI = "/v1/eventHandler";
@@ -96,4 +96,53 @@ public class RestDemoResourceTest extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(mvcResult.getResponse().getContentAsString(),
 				"Greetings " + senderId + " from the postRequestParamEndpoint");
 	}	
+	
+	@Test(priority = 1, groups = "integration")
+	public void validateGetRequestParams() throws Exception {
+		MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
+		final String senderId = "validateGetRequestParams";
+
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+				.get(BASE_URI);
+		request.contentType(MediaType.ALL_VALUE);
+		request.param("id", senderId);
+
+		ResultActions actions = mockMvc.perform(request);
+		actions.andDo(print());
+
+		// Get the result and convert it to an AudienceResponse.
+		// *******************************************************
+		MvcResult mvcResult = actions.andReturn();
+
+		log.info("Raw Response - type is {} content is: {} ", mvcResult
+				.getResponse().getContentType(), mvcResult.getResponse()
+				.getContentAsString());
+		
+		Assert.assertEquals(mvcResult.getResponse().getContentAsString(),
+				senderId + ":" + "testValue");
+	}	
+	@Test(priority = 1, groups = "integration")
+	public void validateDeleteRequestParams() throws Exception {
+		MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
+		final String senderId = "validateGetRequestParams";
+
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+				.delete(BASE_URI);
+		request.contentType(MediaType.ALL_VALUE);
+		request.param("id", senderId);
+
+		ResultActions actions = mockMvc.perform(request);
+		actions.andDo(print());
+
+		// Get the result and convert it to an AudienceResponse.
+		// *******************************************************
+		MvcResult mvcResult = actions.andReturn();
+
+		log.info("Raw Response - type is {} content is: {} ", 
+			mvcResult.getResponse().getContentType(), 
+			mvcResult.getResponse().getContentAsString());
+		
+		Assert.assertEquals(mvcResult.getResponse().getContentAsString(),
+				"Deleted " + senderId + ":" + "testValue");
+	}		
 }
