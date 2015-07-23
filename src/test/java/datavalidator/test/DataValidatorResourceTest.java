@@ -20,7 +20,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import datavalidator.application.RestDemoResourceConfiguration;
+import datavalidator.application.DataValidatorConfiguration;
 
 /**
  * Notes: @WebAppConfiguration sets up, among other things,
@@ -39,13 +39,13 @@ import datavalidator.application.RestDemoResourceConfiguration;
 @EnableAutoConfiguration
 @EnableWebMvc
 @WebAppConfiguration
-@ContextConfiguration(classes = { datavalidator.application.RestDemoResourceApplication.class })
-public class RestDemoResourceTest extends AbstractTestNGSpringContextTests {
+@ContextConfiguration(classes = { datavalidator.application.DataValidatorApplication.class })
+public class DataValidatorResourceTest extends AbstractTestNGSpringContextTests {
 	private String data;
 	private final static String BASE_URI = "/v1/eventHandler";
 	private final static String PING = "ping";
 	@Autowired WebApplicationContext wac;
-	@Autowired RestDemoResourceConfiguration config;
+	@Autowired DataValidatorConfiguration config;
 
 	@Test(priority = 1, groups = "integration")
 	public void validateEventHandlerPing() throws Exception {
@@ -80,7 +80,10 @@ public class RestDemoResourceTest extends AbstractTestNGSpringContextTests {
 				.post(BASE_URI);
 		request.contentType(MediaType.ALL_VALUE);
 		request.content(data);
-		request.param("id", senderId);
+		
+		String[] topics = new String[10];
+		topics[0] = "audience_server_test_provider";
+		request.param("topics", topics);
 
 		ResultActions actions = mockMvc.perform(request);
 		actions.andDo(print());

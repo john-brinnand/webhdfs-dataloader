@@ -8,10 +8,10 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @SpringBootApplication
 @EnableAutoConfiguration
-@EnableConfigurationProperties(RestDemoResourceConfiguration.class)
+@EnableConfigurationProperties(DataValidatorConfiguration.class)
 @EnableWebMvc
-public class RestDemoResourceApplication {
+public class DataValidatorApplication {
     public static void main(String[] args) {
-        SpringApplication.run(RestDemoResourceApplication.class, args);
+        SpringApplication.run(DataValidatorApplication.class, args);
     }	
 }

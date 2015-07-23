@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties()
 @Setter @Getter
-public class RestDemoResourceConfiguration {
+public class DataValidatorConfiguration {
 	private String  version  = "v1";
 	private String  service  = "event_handler_service";
 	private String  topic    = service + "_" + version;
