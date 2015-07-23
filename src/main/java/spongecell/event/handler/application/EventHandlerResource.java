@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
@@ -27,6 +29,15 @@ public class EventHandlerResource {
 		ResponseEntity<String> response = new ResponseEntity<String>(content, HttpStatus.OK);
 		return response; 
 	}
+	
+	@RequestMapping(method = RequestMethod.POST)
+	public ResponseEntity<?> postRequestParamEndpoint(HttpServletRequest request,
+			@RequestParam(value = "id") String id) throws Exception {
+		String content = "Greetings " + id  + " from the postRequestParamEndpoint"; 
+		log.info("Returning : {} ", content);
+		ResponseEntity<String> response = new ResponseEntity<String>(content, HttpStatus.OK);
+		return response; 
+	}	
 	
 	private String getContent (InputStream is) throws IOException {
 		ByteArrayBuilder bab = new ByteArrayBuilder();

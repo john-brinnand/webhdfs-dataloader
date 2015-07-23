@@ -56,4 +56,31 @@ public class EventHandlerResourceTest extends AbstractTestNGSpringContextTests {
 				.getContentAsString());
 		Assert.assertEquals(mvcResult.getResponse().getContentAsString(), data);
 	}
+	
+	@Test(priority = 1, groups = "integration")
+	public void validatePostRequestParams() throws Exception {
+		MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
+		data = "Greetings!";
+		final String senderId = "validatePostRequestParams";
+
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+				.post(BASE_URI);
+		request.contentType(MediaType.ALL_VALUE);
+		request.content(data);
+		request.param("id", senderId);
+
+		ResultActions actions = mockMvc.perform(request);
+		actions.andDo(print());
+
+		// Get the result and convert it to an AudienceResponse.
+		// *******************************************************
+		MvcResult mvcResult = actions.andReturn();
+
+		log.info("Raw Response - type is {} content is: {} ", mvcResult
+				.getResponse().getContentType(), mvcResult.getResponse()
+				.getContentAsString());
+		
+		Assert.assertEquals(mvcResult.getResponse().getContentAsString(),
+				"Greetings " + senderId + " from the postRequestParamEndpoint");
+	}	
 }
