@@ -1,4 +1,4 @@
-package springboot.rest.demo.application;
+package datavalidator.application;
 
 import java.io.IOException;
 import java.io.InputStream;

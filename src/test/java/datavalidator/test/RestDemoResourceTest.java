@@ -1,4 +1,4 @@
-package sprinboot.rest.demo.test;
+package datavalidator.test;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import springboot.rest.demo.application.RestDemoResourceConfiguration;
+import datavalidator.application.RestDemoResourceConfiguration;
 
 /**
  * Notes: @WebAppConfiguration sets up, among other things,
@@ -39,7 +39,7 @@ import springboot.rest.demo.application.RestDemoResourceConfiguration;
 @EnableAutoConfiguration
 @EnableWebMvc
 @WebAppConfiguration
-@ContextConfiguration(classes = { springboot.rest.demo.application.RestDemoResourceApplication.class })
+@ContextConfiguration(classes = { datavalidator.application.RestDemoResourceApplication.class })
 public class RestDemoResourceTest extends AbstractTestNGSpringContextTests {
 	private String data;
 	private final static String BASE_URI = "/v1/eventHandler";
