@@ -14,6 +14,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.msgpack.core.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -97,7 +98,7 @@ public class WebHdfs {
 		
 		CloseableHttpResponse response = null;
 		try {
-			log.info ("Entity is : {} ", put.getEntity().getContent().toString());
+			log.info ("Entity is : {} ", EntityUtils.toString(put.getEntity()));
 			response = httpClient.execute(put);
 			Assert.notNull(response);
 			log.info("Response status code {} ", response.getStatusLine().getStatusCode());
@@ -110,6 +111,8 @@ public class WebHdfs {
 			throw new WebHdfsException("ERROR - failure to get redirect URL: "
 					+ uri.toString(), e);
 		}	
+		put.completed();
+		
 		return response;
 	}
 	

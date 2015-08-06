@@ -111,6 +111,7 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 	public void validateWebHdfsCreate() throws UnsupportedEncodingException {
 		Assert.assertNotNull(webHdfsBuilder);
 		StringEntity entity = new StringEntity("Greetings earthling!\n");
+		
 		WebHdfs webHdfs = webHdfsBuilder
 				.user("spongecell")
 				.entity(entity)
@@ -119,5 +120,6 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 		
 		CloseableHttpResponse response = webHdfs.create();
 		Assert.assertNotNull(response);
+		Assert.assertEquals(response.getStatusLine().getStatusCode(), 201);
 	}
 }
