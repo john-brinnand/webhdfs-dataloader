@@ -1,20 +1,18 @@
 package datavalidator.test;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import javax.annotation.PostConstruct;
 
-import kafka.api.Request;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpRequest;
+import org.apache.http.Header;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestWrapper;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -34,7 +32,7 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 	@Autowired WebHdfsConfiguration webHdfsConfig;
 	@Autowired WebHdfs webHdfs;
 	private URI uri;
-	
+
 	@BeforeTest
 	public void beforeTest() { }
 	@PostConstruct
@@ -51,23 +49,47 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 			.setParameter("user", "spongecell")
 			.build();
 	}
-	
+
 	@Test
-	public void validateCloseableHttpClient() throws URISyntaxException,
-			ClientProtocolException, IOException {
-		StringEntity entity = new StringEntity("Greetings earthling.");
+	public void validateCloseableHttpClient() throws URISyntaxException, UnsupportedEncodingException {
+		//*************************************************
+		StringEntity entity = new StringEntity("Greetings earthling!\n");
 		HttpPut put = new HttpPut(uri);
-		put.setEntity(entity);
 		log.info (put.getURI().toString());
+		put.setEntity(entity);
 		log.info (put.getEntity().toString());
-		
+
 		CloseableHttpClient httpClient = HttpClients.createDefault(); 
-		
-		CloseableHttpResponse response = httpClient.execute(put);
-		Assert.assertNotNull(response);
+
+		CloseableHttpResponse response = null;
+		try {
+			response = httpClient.execute(put);
+			Assert.assertNotNull(response);
+			log.info("Response status code {} ", response.getStatusLine().getStatusCode());
+			Assert.assertEquals(307, response.getStatusLine().getStatusCode());
+		} catch (IOException e) {
+			throw new WebHdfsException("ERROR - failure to get redirect URL: " + uri.toString(), e);
+		}
+		//*************************************************
+		Header[] header = response.getHeaders("Location");
+		Assert.assertNotNull(header);
+		log.info(header[0].toString());
+		String redirectUrl = header[0].toString().substring("Location:0".length());
+
+		URI uri = new URIBuilder(redirectUrl)
+			.setParameter("user", "spongecell")
+			.build();
+
+		HttpPut httpPut = new HttpPut(uri);
+		httpPut.setEntity(entity);
+
+		try {
+			response = httpClient.execute(httpPut);
+			httpClient.close();
+			response.close();
+		} catch (IOException e) {
+			throw new WebHdfsException("ERROR - failure to write data to " + uri.toString() + " Exception is: ", e);
+		}
 		log.info("Response status code {} ", response.getStatusLine().getStatusCode());
-		Assert.assertEquals(307, response.getStatusLine().getStatusCode());
-		response.close();
-		httpClient.close();
 	}
 }
