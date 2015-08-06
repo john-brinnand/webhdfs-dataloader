@@ -29,11 +29,11 @@ import datavalidator.webhdfs.WebHdfsConfiguration;
 import datavalidator.webhdfs.exception.WebHdfsException;
 
 @Slf4j
-@ContextConfiguration(classes = { WebHdfsTest.class, WebHdfs.class})
+@ContextConfiguration(classes = { WebHdfsTest.class, WebHdfs.Builder.class})
 @EnableConfigurationProperties ({ WebHdfsConfiguration.class })
 public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 	@Autowired WebHdfsConfiguration webHdfsConfig;
-	@Autowired WebHdfs webHdfs;
+	@Autowired WebHdfs.Builder webHdfsBuilder;
 	private URI uri;
 
 	@BeforeTest
@@ -105,5 +105,19 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 					+ uri.toString() + " Exception is: ", e);
 		}
 		log.info("Response status code {} ", response.getStatusLine().getStatusCode());
+	}
+	
+	@Test
+	public void validateWebHdfsCreate() throws UnsupportedEncodingException {
+		Assert.assertNotNull(webHdfsBuilder);
+		StringEntity entity = new StringEntity("Greetings earthling!\n");
+		WebHdfs webHdfs = webHdfsBuilder
+				.user("spongecell")
+				.entity(entity)
+				.build();
+		Assert.assertNotNull(webHdfs);
+		
+		CloseableHttpResponse response = webHdfs.create();
+		Assert.assertNotNull(response);
 	}
 }
