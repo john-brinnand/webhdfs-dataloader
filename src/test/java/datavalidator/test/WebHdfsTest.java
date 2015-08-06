@@ -17,11 +17,11 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
@@ -53,6 +53,10 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 	@Test
 	public void validateCloseableHttpClient() throws URISyntaxException, UnsupportedEncodingException {
 		//*************************************************
+		// Send the request to the httpFS server, which 
+		// should respond with a redirect (307) containing
+		// the server and namenode to work with.
+		//*************************************************
 		StringEntity entity = new StringEntity("Greetings earthling!\n");
 		HttpPut put = new HttpPut(uri);
 		log.info (put.getURI().toString());
@@ -71,10 +75,13 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 			throw new WebHdfsException("ERROR - failure to get redirect URL: " + uri.toString(), e);
 		}
 		//*************************************************
+		// Now get the redirect URL and write to HDFS.
+		//*************************************************
 		Header[] header = response.getHeaders("Location");
 		Assert.assertNotNull(header);
 		log.info(header[0].toString());
 		String redirectUrl = header[0].toString().substring("Location:0".length());
+		Assert.assertNotNull(redirectUrl);
 
 		URI uri = new URIBuilder(redirectUrl)
 			.setParameter("user", "spongecell")
@@ -85,6 +92,7 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 
 		try {
 			response = httpClient.execute(httpPut);
+			Assert.assertEquals(201, response.getStatusLine().getStatusCode());
 			httpClient.close();
 			response.close();
 		} catch (IOException e) {

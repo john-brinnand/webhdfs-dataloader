@@ -64,9 +64,9 @@ public class DataValidatorResourceTest extends AbstractTestNGSpringContextTests 
 		// *******************************************************
 		MvcResult mvcResult = actions.andReturn();
 
-		log.info("Raw Response - type is {} content is: {} ", mvcResult
-				.getResponse().getContentType(), mvcResult.getResponse()
-				.getContentAsString());
+		log.info("Raw Response - type is {} content is: {} ", 
+			mvcResult.getResponse().getContentType(), 
+			mvcResult.getResponse().getContentAsString());
 		Assert.assertEquals(mvcResult.getResponse().getContentAsString(), data);
 	}
 	
@@ -92,9 +92,9 @@ public class DataValidatorResourceTest extends AbstractTestNGSpringContextTests 
 		// *******************************************************
 		MvcResult mvcResult = actions.andReturn();
 
-		log.info("Raw Response - type is {} content is: {} ", mvcResult
-				.getResponse().getContentType(), mvcResult.getResponse()
-				.getContentAsString());
+		log.info("Raw Response - type is {} content is: {} ", 
+			mvcResult.getResponse().getContentType(), 
+			mvcResult.getResponse().getContentAsString());
 		
 		Assert.assertEquals(mvcResult.getResponse().getContentAsString(),
 				"Greetings " + senderId + " from the postRequestParamEndpoint");
@@ -117,13 +117,14 @@ public class DataValidatorResourceTest extends AbstractTestNGSpringContextTests 
 		// *******************************************************
 		MvcResult mvcResult = actions.andReturn();
 
-		log.info("Raw Response - type is {} content is: {} ", mvcResult
-				.getResponse().getContentType(), mvcResult.getResponse()
-				.getContentAsString());
+		log.info("Raw Response - type is {} content is: {} ", 
+			mvcResult.getResponse().getContentType(), 
+			mvcResult.getResponse().getContentAsString());
 		
 		Assert.assertEquals(mvcResult.getResponse().getContentAsString(),
 				senderId + ":" + "testValue");
 	}	
+	
 	@Test(priority = 1, groups = "integration")
 	public void validateDeleteRequestParams() throws Exception {
 		MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();

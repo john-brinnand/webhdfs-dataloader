@@ -22,6 +22,9 @@
 		<org.projectlombok.version>1.16.4</org.projectlombok.version>
 		<org.testng.version>6.8.8</org.testng.version>
 		<org.easymock.version>3.3.1</org.easymock.version>
+		<org.apache.httpcomponents.httpclient.version>
+			4.5
+		</org.apache.httpcomponents.httpclient.version>
 	</properties>
 
 	<dependencies>
@@ -71,6 +74,11 @@
 			<artifactId>javax.servlet-api</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+		</dependency>
+
 		<!-- Testing dependencies -->
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -89,7 +97,7 @@
 			<version>${org.easymock.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<!-- Event Handler -->
 		<dependency>
 			<groupId>spongecell-spring-libraries.events</groupId>
