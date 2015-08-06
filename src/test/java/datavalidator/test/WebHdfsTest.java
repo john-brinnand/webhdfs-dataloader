@@ -10,7 +10,6 @@ import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.http.Header;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URIBuilder;
@@ -24,6 +23,10 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
+
+import datavalidator.webhdfs.WebHdfs;
+import datavalidator.webhdfs.WebHdfsConfiguration;
+import datavalidator.webhdfs.exception.WebHdfsException;
 
 @Slf4j
 @ContextConfiguration(classes = { WebHdfsTest.class, WebHdfs.class})
@@ -51,7 +54,8 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 	}
 
 	@Test
-	public void validateCloseableHttpClient() throws URISyntaxException, UnsupportedEncodingException {
+	public void validateCloseableHttpClient() throws URISyntaxException,
+			UnsupportedEncodingException {
 		//*************************************************
 		// Send the request to the httpFS server, which 
 		// should respond with a redirect (307) containing
@@ -72,7 +76,8 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 			log.info("Response status code {} ", response.getStatusLine().getStatusCode());
 			Assert.assertEquals(307, response.getStatusLine().getStatusCode());
 		} catch (IOException e) {
-			throw new WebHdfsException("ERROR - failure to get redirect URL: " + uri.toString(), e);
+			throw new WebHdfsException("ERROR - failure to get redirect URL: "
+					+ uri.toString(), e);
 		}
 		//*************************************************
 		// Now get the redirect URL and write to HDFS.
@@ -96,7 +101,8 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 			httpClient.close();
 			response.close();
 		} catch (IOException e) {
-			throw new WebHdfsException("ERROR - failure to write data to " + uri.toString() + " Exception is: ", e);
+			throw new WebHdfsException("ERROR - failure to write data to "
+					+ uri.toString() + " Exception is: ", e);
 		}
 		log.info("Response status code {} ", response.getStatusLine().getStatusCode());
 	}

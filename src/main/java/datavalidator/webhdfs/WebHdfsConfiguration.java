@@ -1,4 +1,4 @@
-package datavalidator.test;
+package datavalidator.webhdfs;
 
 import lombok.Getter;
 import lombok.Setter;
