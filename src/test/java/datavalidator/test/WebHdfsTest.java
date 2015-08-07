@@ -108,7 +108,7 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 	}
 	
 	@Test
-	public void validateWebHdfsCreate() throws UnsupportedEncodingException {
+	public void validateWebHdfsCreate() throws UnsupportedEncodingException, URISyntaxException {
 		Assert.assertNotNull(webHdfsBuilder);
 		StringEntity entity = new StringEntity("Greetings earthling!\n");
 		
@@ -122,4 +122,19 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 		Assert.assertNotNull(response);
 		Assert.assertEquals(response.getStatusLine().getStatusCode(), 201);
 	}
+	@Test
+	public void validateWebHdfsAppend() throws UnsupportedEncodingException, URISyntaxException {
+		Assert.assertNotNull(webHdfsBuilder);
+		StringEntity leaderEntity = new StringEntity("Take me to your leader!\n");
+		
+		WebHdfs webHdfs = webHdfsBuilder
+				.user("spongecell")
+				.entity(leaderEntity)
+				.build();
+		Assert.assertNotNull(webHdfs);
+		
+		CloseableHttpResponse response = webHdfs.append(leaderEntity);
+		Assert.assertNotNull(response);
+//		Assert.assertEquals(response.getStatusLine().getStatusCode(), 201);
+	}	
 }

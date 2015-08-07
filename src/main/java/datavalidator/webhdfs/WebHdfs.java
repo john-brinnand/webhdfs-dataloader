@@ -7,15 +7,16 @@ import java.net.URISyntaxException;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.http.Header;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.msgpack.core.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.test.context.ContextConfiguration;
@@ -35,10 +36,15 @@ public class WebHdfs {
 	public WebHdfs () {}
 	
 	private WebHdfs (Builder builder) {
-		fileName = builder.fileName;
-		entity = builder.entity;
-		user = builder.user;
 		webHdfsConfig = builder.webHdfsConfig;
+		if (builder.fileName != null)  {
+			fileName = builder.fileName;
+		}
+		else {
+			fileName = webHdfsConfig.getFileName();
+		}
+		user = builder.user;
+		entity = builder.entity;
 		
 		try {
 			uri = new URIBuilder()
@@ -46,10 +52,9 @@ public class WebHdfs {
 				.setHost(webHdfsConfig.getHost())
 				.setPort(webHdfsConfig.getPort())
 				.setPath(webHdfsConfig.getWEBHDFS_PREFIX()
-						+ webHdfsConfig.getPath() + "/" 
-						+ webHdfsConfig.getFileName())
+					+ webHdfsConfig.getPath() + 
+					"/" + fileName)
 				.setParameter("overwrite", "true")
-				.setParameter("op", "CREATE")
 				.setParameter("user", user)
 				.build();
 			
@@ -89,8 +94,14 @@ public class WebHdfs {
 	
 	/**
 	 * Create the target file. 
+	 * @throws URISyntaxException 
 	 */
-	public CloseableHttpResponse create () {
+	public CloseableHttpResponse create () throws URISyntaxException {
+		URI uri = new URIBuilder(this.uri)
+			.setParameter("op", "CREATE")
+			.setParameter("user", user)
+			.build();
+		
 		HttpPut put = new HttpPut(uri);
 		log.info ("URI is : {} ", put.getURI().toString());
 		
@@ -115,6 +126,37 @@ public class WebHdfs {
 		
 		return response;
 	}
+	
+	public CloseableHttpResponse append (StringEntity entity) throws URISyntaxException {
+		uri = new URIBuilder(uri)
+			.setParameter("op", "APPEND")
+			.setParameter("user", user)
+			.build();
+		
+		httpClient = HttpClients.createDefault();
+		
+		HttpPost httpPost = new HttpPost(uri);
+		log.info ("URI is : {} ", httpPost.getURI().toString());
+		
+		CloseableHttpResponse response = null;
+		try {
+			response = httpClient.execute(httpPost);
+			Assert.notNull(response);
+			log.info("Response status code {} ", 
+				response.getStatusLine().getStatusCode());
+			Assert.isTrue(response.getStatusLine().getStatusCode() == 307, 
+				"Response code indicates a failed write");	
+			
+			response = write(response, httpPost);
+			
+			httpPost.completed();
+			httpClient.close();
+		} catch (IOException e) {
+			throw new WebHdfsException("ERROR - failure to get redirect URL: "
+					+ uri.toString(), e);
+		}	
+		return response;
+	}	
 	
 	private CloseableHttpResponse write(CloseableHttpResponse response) {
 		//*************************************************
@@ -146,4 +188,35 @@ public class WebHdfs {
 		}
 		return response;
 	}
+	private CloseableHttpResponse write(CloseableHttpResponse response, 
+			HttpEntityEnclosingRequestBase httpRequest) {
+		//*************************************************
+		// Now get the redirect URL and write to HDFS.
+		//*************************************************
+		Header[] header = response.getHeaders("Location");
+		Assert.notNull(header);
+		log.info(header[0].toString());
+		String redirectUrl = header[0].toString().substring("Location:0".length());
+
+		try {
+			URI uri = new URIBuilder(redirectUrl)
+				.setParameter("user", "spongecell")
+				.build();
+			
+			httpRequest.setURI(uri);
+			httpRequest.setEntity(entity);
+			log.info ("Entity is : {} ", EntityUtils.toString(httpRequest.getEntity()));
+			
+			response = httpClient.execute(httpRequest);
+			log.info("Response status code {} ", response.getStatusLine().getStatusCode());
+			Assert.isTrue(response.getStatusLine().getStatusCode() == 201, 
+				"Response code indicates a failed write");
+			response.close();
+			
+		} catch (IOException | URISyntaxException e) {
+			throw new WebHdfsException("ERROR - failure to write data to "
+					+ uri.toString() + " Exception is: ", e);
+		}
+		return response;
+	}	
 }
