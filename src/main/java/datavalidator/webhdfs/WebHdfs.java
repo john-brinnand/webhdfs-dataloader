@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.servlet.http.HttpServletResponse;
+
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.http.Header;
@@ -116,7 +118,7 @@ public class WebHdfs {
 			Assert.isTrue(response.getStatusLine().getStatusCode() == 307, 
 				"Response code indicates a failed write");	
 			
-			response = write(response, put);
+			response = write(response, put, HttpServletResponse.SC_CREATED);
 			
 		} catch (IOException e) {
 			throw new WebHdfsException("ERROR - failure to get redirect URL: "
@@ -147,8 +149,7 @@ public class WebHdfs {
 			Assert.isTrue(response.getStatusLine().getStatusCode() == 307, 
 				"Response code indicates a failed write");	
 			
-			response = write(response, httpPost);
-			
+			response = write(response, httpPost, HttpServletResponse.SC_OK);
 			httpPost.completed();
 			httpClient.close();
 		} catch (IOException e) {
@@ -158,38 +159,8 @@ public class WebHdfs {
 		return response;
 	}	
 	
-	private CloseableHttpResponse write(CloseableHttpResponse response) {
-		//*************************************************
-		// Now get the redirect URL and write to HDFS.
-		//*************************************************
-		Header[] header = response.getHeaders("Location");
-		Assert.notNull(header);
-		log.info(header[0].toString());
-		String redirectUrl = header[0].toString().substring("Location:0".length());
-
-		try {
-			URI uri = new URIBuilder(redirectUrl)
-				.setParameter("user", "spongecell")
-				.build();
-
-			HttpPut httpPut = new HttpPut(uri);
-			httpPut.setEntity(entity);
-			
-			response = httpClient.execute(httpPut);
-			log.info("Response status code {} ", response.getStatusLine().getStatusCode());
-			Assert.isTrue(response.getStatusLine().getStatusCode() == 201, 
-				"Response code indicates a failed write");
-			
-			httpClient.close();
-			response.close();
-		} catch (IOException | URISyntaxException e) {
-			throw new WebHdfsException("ERROR - failure to write data to "
-					+ uri.toString() + " Exception is: ", e);
-		}
-		return response;
-	}
 	private CloseableHttpResponse write(CloseableHttpResponse response, 
-			HttpEntityEnclosingRequestBase httpRequest) {
+			HttpEntityEnclosingRequestBase httpRequest, int responseCode) {
 		//*************************************************
 		// Now get the redirect URL and write to HDFS.
 		//*************************************************
@@ -209,7 +180,7 @@ public class WebHdfs {
 			
 			response = httpClient.execute(httpRequest);
 			log.info("Response status code {} ", response.getStatusLine().getStatusCode());
-			Assert.isTrue(response.getStatusLine().getStatusCode() == 201, 
+			Assert.isTrue(response.getStatusLine().getStatusCode() == responseCode, 
 				"Response code indicates a failed write");
 			response.close();
 			
