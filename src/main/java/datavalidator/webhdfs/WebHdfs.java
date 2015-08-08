@@ -116,7 +116,7 @@ public class WebHdfs {
 			Assert.isTrue(response.getStatusLine().getStatusCode() == 307, 
 				"Response code indicates a failed write");	
 			
-			response = write(response);
+			response = write(response, put);
 			
 		} catch (IOException e) {
 			throw new WebHdfsException("ERROR - failure to get redirect URL: "
