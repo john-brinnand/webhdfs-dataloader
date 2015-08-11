@@ -1,9 +1,11 @@
 package webhdfs.dataloader.test;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 
 import javax.annotation.PostConstruct;
 
@@ -16,12 +18,18 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.codehaus.jackson.map.util.JSONWrappedObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import webhdfs.dataloader.WebHdfs;
 import webhdfs.dataloader.WebHdfsConfiguration;
@@ -84,9 +92,7 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 		String redirectUrl = header[0].toString().substring("Location:0".length());
 		Assert.assertNotNull(redirectUrl);
 
-		URI uri = new URIBuilder(redirectUrl)
-			.setParameter("user", "spongecell")
-			.build();
+		URI uri = new URIBuilder(redirectUrl).build();
 
 		HttpPut httpPut = new HttpPut(uri);
 		httpPut.setEntity(entity);
@@ -140,5 +146,31 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 		response = webHdfs.append(leaderEntity);
 		Assert.assertNotNull(response);
 		Assert.assertEquals(response.getStatusLine().getStatusCode(), 200);
+	}	
+	
+	@Test(dependsOnMethods="validateWebHdfsCreate")
+	public void validateWebHdfsFileStatus() throws URISyntaxException, IOException {
+		Assert.assertNotNull(webHdfsBuilder);
+		
+		WebHdfs webHdfs = webHdfsBuilder
+				.user("spongecell")
+				.build();
+		Assert.assertNotNull(webHdfs);
+		
+		CloseableHttpResponse response = webHdfs.getFileStatus(webHdfsConfig.getFileName());
+		Assert.assertNotNull(response);
+		Assert.assertEquals(response.getStatusLine().getStatusCode(), 200);
+		
+		ObjectNode fileStatus = new ObjectMapper().readValue(
+			EntityUtils.toString(response.getEntity()), 
+			new TypeReference<ObjectNode>() {
+		});
+		log.info("File status is: {} ", new ObjectMapper()
+			.writerWithDefaultPrettyPrinter()
+			.writeValueAsString(fileStatus));
+		
+		Assert.assertEquals(fileStatus.get("FileStatus").get("type").asText(), "FILE");
+		Assert.assertEquals(fileStatus.get("FileStatus").get("permission").asText(), "755");
+		Assert.assertEquals(fileStatus.get("FileStatus").get("owner").asText(), "dr.who");
 	}	
 }

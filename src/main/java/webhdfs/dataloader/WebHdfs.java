@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URIBuilder;
@@ -162,6 +163,35 @@ public class WebHdfs {
 		}	
 		return response;
 	}	
+	
+	public CloseableHttpResponse getFileStatus (String fileName) throws WebHdfsException {
+		CloseableHttpResponse response = null;
+		try {
+			URI uri = new URIBuilder()
+				.setScheme(webHdfsConfig.getScheme())
+				.setHost(webHdfsConfig.getHost())
+				.setPort(webHdfsConfig.getPort())
+				.setPath(webHdfsConfig.getWEBHDFS_PREFIX()
+						+ webHdfsConfig.getPath() + "/" 
+						+ webHdfsConfig.getFileName())
+				.setParameter("overwrite", "false")
+				.setParameter("user", webHdfsConfig.getUser())
+				.setParameter("op", "GETFILESTATUS")
+				.build();
+			
+			HttpGet httpMethod = new HttpGet(uri);
+			response = httpClient.execute(httpMethod);
+			Assert.notNull(response);
+			Assert.isTrue(response.getStatusLine().getStatusCode() == 200, 
+					"Response code indicates a failed write");	
+			
+		} catch (URISyntaxException | IOException e) {
+			log.error("ERROR -  ");
+		}
+		log.info("Returning http response. Status code is: {}", 
+			response.getStatusLine().getStatusCode());
+		return response;
+	}
 	
 	private CloseableHttpResponse write(CloseableHttpResponse response, 
 			HttpEntityEnclosingRequestBase httpRequest, int responseCode, AbstractHttpEntity entity) {
