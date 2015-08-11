@@ -112,7 +112,6 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 		
 		WebHdfs webHdfs = webHdfsBuilder
 				.user(user)
-				.entity(entity)
 				.overwrite(overwrite)
 				.build();
 		Assert.assertNotNull(webHdfs);
@@ -132,15 +131,14 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 		
 		WebHdfs webHdfs = webHdfsBuilder
 				.user("spongecell")
-				.entity(leaderEntity)
 				.build();
 		Assert.assertNotNull(webHdfs);
 		
-		CloseableHttpResponse response = webHdfs.append(leaderEntity);
+		CloseableHttpResponse response = webHdfs.append(questionEntity);
 		Assert.assertNotNull(response);
 		Assert.assertEquals(response.getStatusLine().getStatusCode(), 200);
 		
-		response = webHdfs.append(questionEntity);
+		response = webHdfs.append(leaderEntity);
 		Assert.assertNotNull(response);
 		Assert.assertEquals(response.getStatusLine().getStatusCode(), 200);
 	}	

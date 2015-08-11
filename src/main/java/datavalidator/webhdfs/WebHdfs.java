@@ -28,7 +28,6 @@ import datavalidator.webhdfs.exception.WebHdfsException;
 
 @Slf4j
 public class WebHdfs {
-	private StringEntity entity;
 	private WebHdfsConfiguration webHdfsConfig;
 	private CloseableHttpClient httpClient;
 	
@@ -46,8 +45,6 @@ public class WebHdfs {
 		if (builder.user != null) {
 			webHdfsConfig.setUser(builder.user);
 		}
-		entity = builder.entity;
-		
 		httpClient = HttpClients.createDefault();
 	}
 
@@ -56,7 +53,6 @@ public class WebHdfs {
 	public static class Builder {
 		@Autowired WebHdfsConfiguration webHdfsConfig;
 		private String fileName;
-		private StringEntity entity;
 		private String user;
 		private String overwrite;
 		
@@ -68,11 +64,6 @@ public class WebHdfs {
 			this.fileName = fileName;
 			return this;
 		}	
-		
-		public Builder entity(StringEntity entity) {
-			this.entity = entity;
-			return this;
-		}
 		
 		public Builder user(String user) {
 			this.user = user;
