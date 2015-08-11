@@ -28,7 +28,9 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import webhdfs.dataloader.WebHdfs;
@@ -171,4 +173,38 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 		Assert.assertEquals(fileStatus.get("FileStatus").get("permission").asText(), "755");
 		Assert.assertEquals(fileStatus.get("FileStatus").get("owner").asText(), "dr.who");
 	}	
+	
+	@Test(dependsOnMethods="validateWebHdfsCreate")
+	public void validateWebHdfsListStatus() throws URISyntaxException, IOException {
+		Assert.assertNotNull(webHdfsBuilder);
+		String dataDir = "/data";
+		
+		WebHdfs webHdfs = webHdfsBuilder.build();
+		Assert.assertNotNull(webHdfs);
+		
+		CloseableHttpResponse response = webHdfs.listStatus(dataDir);
+		Assert.assertNotNull(response);
+		Assert.assertEquals(response.getStatusLine().getStatusCode(), 200);
+		
+		ObjectNode dirStatus = new ObjectMapper().readValue(
+			EntityUtils.toString(response.getEntity()), 
+			new TypeReference<ObjectNode>() {
+		});
+		log.info("Directory status is: {} ", new ObjectMapper()
+			.writerWithDefaultPrettyPrinter()
+			.writeValueAsString(dirStatus));
+		
+		ArrayNode fileStatus  = new ObjectMapper().readValue(dirStatus
+			.get("FileStatuses")
+			.get("FileStatus").toString(),
+			new TypeReference<ArrayNode>() { 
+		});
+		
+		for (int i = 0; i < fileStatus.size(); i++) {
+			JsonNode fileStatusNode = fileStatus.get(i);
+			Assert.assertEquals(fileStatusNode.get("type").asText(), "FILE");
+			Assert.assertEquals(fileStatusNode.get("permission").asText(), "755");
+			Assert.assertEquals(fileStatusNode.get("owner").asText(), "dr.who");	
+		}
+	}
 }

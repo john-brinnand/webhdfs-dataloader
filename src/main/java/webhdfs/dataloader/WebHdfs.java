@@ -164,6 +164,13 @@ public class WebHdfs {
 		return response;
 	}	
 	
+	/**
+	 * Retrieves the file status.
+	 * 
+	 * @param fileName
+	 * @return
+	 * @throws WebHdfsException
+	 */
 	public CloseableHttpResponse getFileStatus (String fileName) throws WebHdfsException {
 		CloseableHttpResponse response = null;
 		try {
@@ -177,6 +184,53 @@ public class WebHdfs {
 				.setParameter("overwrite", "false")
 				.setParameter("user", webHdfsConfig.getUser())
 				.setParameter("op", "GETFILESTATUS")
+				.build();
+			
+			HttpGet httpMethod = new HttpGet(uri);
+			response = httpClient.execute(httpMethod);
+			Assert.notNull(response);
+			Assert.isTrue(response.getStatusLine().getStatusCode() == 200, 
+					"Response code indicates a failed write");	
+			
+		} catch (URISyntaxException | IOException e) {
+			log.error("ERROR -  ");
+		}
+		log.info("Returning http response. Status code is: {}", 
+			response.getStatusLine().getStatusCode());
+		return response;
+	}
+	
+	/**
+	 * This method gets the directory listing. This means it will return 
+	 * the current listing and all child directories and files below it.
+	 * 
+	 * @param fileName
+	 * @return
+	 * @throws WebHdfsException
+	 */
+	public CloseableHttpResponse listStatus (String fileName) throws WebHdfsException {
+		CloseableHttpResponse response = null;
+
+		if (!fileName.equals("/data")) {
+			String tempFileName = webHdfsConfig.getWEBHDFS_PREFIX()
+					+ webHdfsConfig.getPath() + "/" 
+					+ fileName;			
+			fileName = tempFileName;
+		}
+		else {
+			String tempFileName = webHdfsConfig.getWEBHDFS_PREFIX()
+					+ webHdfsConfig.getPath();
+			fileName = tempFileName;			
+		}
+		try {
+			URI uri = new URIBuilder()
+				.setScheme(webHdfsConfig.getScheme())
+				.setHost(webHdfsConfig.getHost())
+				.setPort(webHdfsConfig.getPort())
+				.setPath(fileName)
+				.setParameter("overwrite", "false")
+				.setParameter("user", webHdfsConfig.getUser())
+				.setParameter("op", "LISTSTATUS")
 				.build();
 			
 			HttpGet httpMethod = new HttpGet(uri);
