@@ -21,7 +21,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import datavalidator.webhdfs.WebHdfs;
@@ -36,8 +35,6 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 	@Autowired WebHdfs.Builder webHdfsBuilder;
 	private URI uri;
 
-	@BeforeTest
-	public void beforeTest() { }
 	@PostConstruct
 	public void postConstruct() throws URISyntaxException {
 		uri = new URIBuilder()
@@ -47,9 +44,8 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 			.setPath(webHdfsConfig.getWEBHDFS_PREFIX()
 				+ webHdfsConfig.getPath() + "/" 
 				+ webHdfsConfig.getFileName())
-			.setParameter("overwrite", "true")
-			.setParameter("op", "CREATE")
-			.setParameter("user", "spongecell")
+			.setParameter("overwrite", webHdfsConfig.getOverwrite())
+			.setParameter("user", webHdfsConfig.getUser())
 			.build();
 	}
 
@@ -108,13 +104,16 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 	}
 	
 	@Test
-	public void validateWebHdfsCreate() throws UnsupportedEncodingException, URISyntaxException {
+	public void validateWebHdfsCreate() throws URISyntaxException, UnsupportedEncodingException {
 		Assert.assertNotNull(webHdfsBuilder);
 		StringEntity entity = new StringEntity("Greetings earthling!\n");
+		String user = "spongecell";
+		String overwrite = "true";
 		
 		WebHdfs webHdfs = webHdfsBuilder
-				.user("spongecell")
+				.user(user)
 				.entity(entity)
+				.overwrite(overwrite)
 				.build();
 		Assert.assertNotNull(webHdfs);
 		
