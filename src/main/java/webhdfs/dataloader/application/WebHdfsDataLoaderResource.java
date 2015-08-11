@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 @Slf4j
 @RestController
 @RequestMapping("/v1/eventHandler")
-public class DataValidatorResource {
+public class WebHdfsDataLoaderResource {
 	
 	@RequestMapping("/ping")
 	public ResponseEntity<?> icmpEcho(HttpServletRequest request) throws Exception {

@@ -20,7 +20,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import webhdfs.dataloader.application.DataValidatorConfiguration;
+import webhdfs.dataloader.application.WebHdfsDataLoaderConfiguration;
 
 /**
  * Notes: @WebAppConfiguration sets up, among other things,
@@ -39,13 +39,13 @@ import webhdfs.dataloader.application.DataValidatorConfiguration;
 @EnableAutoConfiguration
 @EnableWebMvc
 @WebAppConfiguration
-@ContextConfiguration(classes = { webhdfs.dataloader.application.DataValidatorApplication.class })
-public class DataValidatorResourceTest extends AbstractTestNGSpringContextTests {
+@ContextConfiguration(classes = { webhdfs.dataloader.application.WebHdfsDataLoaderApplication.class })
+public class WebHdfsDataLoaderResourceTest extends AbstractTestNGSpringContextTests {
 	private String data;
 	private final static String BASE_URI = "/v1/eventHandler";
 	private final static String PING = "ping";
 	@Autowired WebApplicationContext wac;
-	@Autowired DataValidatorConfiguration config;
+	@Autowired WebHdfsDataLoaderConfiguration config;
 
 	@Test(priority = 1, groups = "integration")
 	public void validateEventHandlerPing() throws Exception {

@@ -8,10 +8,10 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @SpringBootApplication
 @EnableAutoConfiguration
-@EnableConfigurationProperties(DataValidatorConfiguration.class)
+@EnableConfigurationProperties(WebHdfsDataLoaderConfiguration.class)
 @EnableWebMvc
-public class DataValidatorApplication {
+public class WebHdfsDataLoaderApplication {
     public static void main(String[] args) {
-        SpringApplication.run(DataValidatorApplication.class, args);
+        SpringApplication.run(WebHdfsDataLoaderApplication.class, args);
     }	
 }
