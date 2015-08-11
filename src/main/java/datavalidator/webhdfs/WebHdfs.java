@@ -14,6 +14,7 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -92,7 +93,7 @@ public class WebHdfs {
 	 * Create the target file. 
 	 * @throws URISyntaxException 
 	 */
-	public CloseableHttpResponse create () throws URISyntaxException {
+	public CloseableHttpResponse create (AbstractHttpEntity entity) throws URISyntaxException {
 		URI uri = new URIBuilder()
 			.setScheme(webHdfsConfig.getScheme())
 			.setHost(webHdfsConfig.getHost())
@@ -119,7 +120,7 @@ public class WebHdfs {
 			Assert.isTrue(response.getStatusLine().getStatusCode() == 307, 
 				"Response code indicates a failed write");	
 			
-			response = write(response, put, HttpServletResponse.SC_CREATED);
+			response = write(response, put, HttpServletResponse.SC_CREATED, entity);
 			response.close();
 			
 		} catch (IOException e) {
@@ -146,6 +147,7 @@ public class WebHdfs {
 			.build();
 
 		HttpPost httpPost = new HttpPost(uri);
+		
 		log.info ("URI is : {} ", httpPost.getURI().toString());
 		
 		CloseableHttpResponse response = null;
@@ -157,7 +159,7 @@ public class WebHdfs {
 			Assert.isTrue(response.getStatusLine().getStatusCode() == 307, 
 				"Response code indicates a failed write");	
 			
-			response = write(response, httpPost, HttpServletResponse.SC_OK);
+			response = write(response, httpPost, HttpServletResponse.SC_OK, entity);
 			httpPost.completed();
 			
 			// Closes all resources.
@@ -171,7 +173,7 @@ public class WebHdfs {
 	}	
 	
 	private CloseableHttpResponse write(CloseableHttpResponse response, 
-			HttpEntityEnclosingRequestBase httpRequest, int responseCode) {
+			HttpEntityEnclosingRequestBase httpRequest, int responseCode, AbstractHttpEntity entity) {
 		//*************************************************
 		// Now get the redirect URL and write to HDFS.
 		//*************************************************
