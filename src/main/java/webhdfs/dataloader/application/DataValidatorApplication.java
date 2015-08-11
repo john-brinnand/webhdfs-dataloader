@@ -1,4 +1,4 @@
-package datavalidator.application;
+package webhdfs.dataloader.application;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;

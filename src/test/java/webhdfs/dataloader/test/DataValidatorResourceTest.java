@@ -1,4 +1,4 @@
-package datavalidator.test;
+package webhdfs.dataloader.test;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import datavalidator.application.DataValidatorConfiguration;
+import webhdfs.dataloader.application.DataValidatorConfiguration;
 
 /**
  * Notes: @WebAppConfiguration sets up, among other things,
@@ -39,7 +39,7 @@ import datavalidator.application.DataValidatorConfiguration;
 @EnableAutoConfiguration
 @EnableWebMvc
 @WebAppConfiguration
-@ContextConfiguration(classes = { datavalidator.application.DataValidatorApplication.class })
+@ContextConfiguration(classes = { webhdfs.dataloader.application.DataValidatorApplication.class })
 public class DataValidatorResourceTest extends AbstractTestNGSpringContextTests {
 	private String data;
 	private final static String BASE_URI = "/v1/eventHandler";

@@ -1,4 +1,4 @@
-package datavalidator.webhdfs.exception;
+package webhdfs.dataloader.exception;
 
 public class WebHdfsException extends RuntimeException {
 

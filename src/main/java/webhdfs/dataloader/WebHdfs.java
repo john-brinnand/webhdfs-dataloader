@@ -1,4 +1,4 @@
-package datavalidator.webhdfs;
+package webhdfs.dataloader;
 
 import java.io.IOException;
 import java.net.URI;
@@ -24,7 +24,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.util.Assert;
 
-import datavalidator.webhdfs.exception.WebHdfsException;
+import webhdfs.dataloader.exception.WebHdfsException;
 
 @Slf4j
 public class WebHdfs {

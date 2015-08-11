@@ -1,4 +1,4 @@
-package datavalidator.test;
+package webhdfs.dataloader.test;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -23,9 +23,9 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import datavalidator.webhdfs.WebHdfs;
-import datavalidator.webhdfs.WebHdfsConfiguration;
-import datavalidator.webhdfs.exception.WebHdfsException;
+import webhdfs.dataloader.WebHdfs;
+import webhdfs.dataloader.WebHdfsConfiguration;
+import webhdfs.dataloader.exception.WebHdfsException;
 
 @Slf4j
 @ContextConfiguration(classes = { WebHdfsTest.class, WebHdfs.Builder.class})
@@ -120,7 +120,6 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 		Assert.assertNotNull(response);
 		Assert.assertEquals(response.getStatusLine().getStatusCode(), 201);
 	}
-
 	
 	@Test(dependsOnMethods="validateWebHdfsCreate")
 	public void validateWebHdfsAppend() throws UnsupportedEncodingException,

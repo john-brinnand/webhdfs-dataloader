@@ -1,4 +1,4 @@
-package datavalidator.application;
+package webhdfs.dataloader.application;
 
 import java.io.IOException;
 import java.io.InputStream;
