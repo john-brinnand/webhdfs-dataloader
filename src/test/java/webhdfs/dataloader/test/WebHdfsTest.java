@@ -152,9 +152,7 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 	public void validateWebHdfsFileStatus() throws URISyntaxException, IOException {
 		Assert.assertNotNull(webHdfsBuilder);
 		
-		WebHdfs webHdfs = webHdfsBuilder
-				.user("spongecell")
-				.build();
+		WebHdfs webHdfs = webHdfsBuilder.build();
 		Assert.assertNotNull(webHdfs);
 		
 		CloseableHttpResponse response = webHdfs.getFileStatus(webHdfsConfig.getFileName());
