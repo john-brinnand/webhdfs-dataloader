@@ -22,10 +22,10 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.util.Assert;
 
 import webhdfs.dataloader.exception.WebHdfsException;
+
 
 @Slf4j
 public class WebHdfs {
@@ -49,7 +49,6 @@ public class WebHdfs {
 		httpClient = HttpClients.createDefault();
 	}
 
-	@ContextConfiguration(classes = { WebHdfs.Builder.class })
 	@EnableConfigurationProperties ({ WebHdfsConfiguration.class })
 	public static class Builder {
 		@Autowired WebHdfsConfiguration webHdfsConfig;
