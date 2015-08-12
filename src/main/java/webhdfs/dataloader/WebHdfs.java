@@ -82,21 +82,27 @@ public class WebHdfs {
 	}
 	
 	/**
-	 * Create the target file. 
+	 * Create the file in HDFS. 
+	 * 
 	 * @throws URISyntaxException 
 	 */
-	public CloseableHttpResponse create (final AbstractHttpEntity entity) throws URISyntaxException {
-		final URI uri = new URIBuilder()
-			.setScheme(webHdfsConfig.getScheme())
-			.setHost(webHdfsConfig.getHost())
-			.setPort(webHdfsConfig.getPort())
-			.setPath(webHdfsConfig.getWEBHDFS_PREFIX()
-				+ webHdfsConfig.getPath() + "/" 
-				+ webHdfsConfig.getFileName())
-			.setParameter("overwrite", webHdfsConfig.getOverwrite())
-			.setParameter("user", webHdfsConfig.getUser())
-			.setParameter("op", "CREATE")
-			.build();
+	public CloseableHttpResponse create (final AbstractHttpEntity entity) throws WebHdfsException {
+		URI uri = null;
+		try {
+			uri = new URIBuilder()
+				.setScheme(webHdfsConfig.getScheme())
+				.setHost(webHdfsConfig.getHost())
+				.setPort(webHdfsConfig.getPort())
+				.setPath(webHdfsConfig.getWEBHDFS_PREFIX()
+					+ webHdfsConfig.getPath() + "/" 
+					+ webHdfsConfig.getFileName())
+				.setParameter("overwrite", webHdfsConfig.getOverwrite())
+				.setParameter("user", webHdfsConfig.getUser())
+				.setParameter("op", "CREATE")
+				.build();
+		} catch (URISyntaxException e) {
+			throw new WebHdfsException("ERROR - failure to create URI. Cause is:  ", e);	
+		}
 		
 		HttpPut put = new HttpPut(uri);
 		log.info ("URI is : {} ", put.getURI().toString());
@@ -116,7 +122,7 @@ public class WebHdfs {
 			response.close();
 			
 		} catch (IOException e) {
-			throw new WebHdfsException("ERROR - failure to get redirect URL: "
+			throw new WebHdfsException("ERROR - failure to create file: "
 					+ uri.toString(), e);
 		}	
 		finally {

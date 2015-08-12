@@ -3,10 +3,12 @@ package webhdfs.dataloader.application;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,12 +16,25 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import spongecell.spring.event_handler.EventHandler;
+import spongecell.spring.event_handler.message.RequestEvent;
+
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 
 @Slf4j
 @RestController
 @RequestMapping("/v1/eventHandler")
 public class WebHdfsDataLoaderResource {
+	@Autowired private EventHandler eventHandler; 
+
+	@PostConstruct
+	public void init() {
+		eventHandler.keyTranslatorType(String.class)
+			.valueTranslatorType(RequestEvent.class)
+			.build();
+		// TODO start the event handler in a thread here.
+		//************************************************
+	}
 	
 	@RequestMapping("/ping")
 	public ResponseEntity<?> icmpEcho(HttpServletRequest request) throws Exception {
