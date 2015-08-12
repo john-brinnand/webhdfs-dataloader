@@ -85,8 +85,8 @@ public class WebHdfs {
 	 * Create the target file. 
 	 * @throws URISyntaxException 
 	 */
-	public CloseableHttpResponse create (AbstractHttpEntity entity) throws URISyntaxException {
-		URI uri = new URIBuilder()
+	public CloseableHttpResponse create (final AbstractHttpEntity entity) throws URISyntaxException {
+		final URI uri = new URIBuilder()
 			.setScheme(webHdfsConfig.getScheme())
 			.setHost(webHdfsConfig.getHost())
 			.setPort(webHdfsConfig.getPort())
@@ -125,8 +125,8 @@ public class WebHdfs {
 		return response;
 	}
 	
-	public CloseableHttpResponse append (StringEntity entity) throws URISyntaxException {
-		URI uri = new URIBuilder()
+	public CloseableHttpResponse append (final StringEntity entity) throws URISyntaxException {
+		final URI uri = new URIBuilder()
 			.setScheme(webHdfsConfig.getScheme())
 			.setHost(webHdfsConfig.getHost())
 			.setPort(webHdfsConfig.getPort())
@@ -174,7 +174,7 @@ public class WebHdfs {
 	public CloseableHttpResponse getFileStatus (String fileName) throws WebHdfsException {
 		CloseableHttpResponse response = null;
 		try {
-			URI uri = new URIBuilder()
+			final URI uri = new URIBuilder()
 				.setScheme(webHdfsConfig.getScheme())
 				.setHost(webHdfsConfig.getHost())
 				.setPort(webHdfsConfig.getPort())
@@ -223,7 +223,7 @@ public class WebHdfs {
 			fileName = tempFileName;			
 		}
 		try {
-			URI uri = new URIBuilder()
+			final URI uri = new URIBuilder()
 				.setScheme(webHdfsConfig.getScheme())
 				.setHost(webHdfsConfig.getHost())
 				.setPort(webHdfsConfig.getPort())
