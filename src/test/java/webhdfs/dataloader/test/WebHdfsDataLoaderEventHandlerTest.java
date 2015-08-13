@@ -4,9 +4,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -68,11 +71,12 @@ public class WebHdfsDataLoaderEventHandlerTest extends AbstractTestNGSpringConte
 	private static final String GROUP = "testGroup";
 	private final String msg = "validateEventHandlerFuture says - 'Greetings' "; 
 	
-	@PostConstruct
-	public Future<String> loadData() throws IOException {
-	    return pool.submit(new Callable<String>() {
+//	@PostConstruct
+	public EventHandlerGenericConsumerTest<String, String> loadData() throws IOException {
+	    Future<EventHandlerGenericConsumerTest<String, String>> rval =  pool.submit(
+	    		new Callable<EventHandlerGenericConsumerTest<String, String>>() {
 	        @Override
-	        public String call() throws Exception {
+	        public EventHandlerGenericConsumerTest<String, String> call() throws Exception {
 	        	eventHandlerConsumer
 	        		.keyTranslatorType(String.class)
 	        		.valueTranslatorType(String.class)
@@ -82,18 +86,18 @@ public class WebHdfsDataLoaderEventHandlerTest extends AbstractTestNGSpringConte
 	        		.build();
 	        	EventHandlerGenericConsumerTest<String, String>  eventConsumer = 
 	    				new EventHandlerGenericConsumerTest<String, String>();
-	        	int retries = 0;
-	        	while (retries < 50) {
-	        		eventHandlerConsumer.readAll(topic, eventConsumer);
-	        		Assert.assertEquals(eventConsumer.getTopic(), topic);
-	        		Assert.assertEquals(eventConsumer.getKey(), key);
-	        		Assert.assertEquals(eventConsumer.getValue(), msg);		
-	        		Thread.sleep(3000);
-	        		break;
-	        	}
-				return "completed";		
+	        	eventHandlerConsumer.readAll(topic, eventConsumer);
+
+				return eventConsumer; 
 	        }
 	    });
+	    EventHandlerGenericConsumerTest<String, String> eventConsumer = null;
+	    try {
+	    	eventConsumer = rval.get();
+		} catch (InterruptedException | ExecutionException e) {
+			log.error("Thread interrupted.");
+		}
+	    return eventConsumer;
 	}
 	
 	@PreDestroy 
@@ -117,6 +121,14 @@ public class WebHdfsDataLoaderEventHandlerTest extends AbstractTestNGSpringConte
 		} catch (InvalidTranslatorException e) {
 			log.info ("ERROR - failed to write: {} ", e);
 		}
+		EventHandlerGenericConsumerTest<String, String> eventConsumer = loadData();
+		while (eventConsumer == null || eventConsumer.getTopic() == null) {
+			Thread.sleep(3000);
+			loadData();
+		}
+    	Assert.assertEquals(eventConsumer.getTopic(), topic);
+    	Assert.assertEquals(eventConsumer.getKey(), key);
+    	Assert.assertEquals(eventConsumer.getValue(), msg);		
 	}
 	
 	@AfterTest
