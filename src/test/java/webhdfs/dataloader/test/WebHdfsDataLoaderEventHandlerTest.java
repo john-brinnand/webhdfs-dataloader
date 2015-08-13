@@ -43,10 +43,6 @@ import webhdfs.dataloader.WebHdfsConfiguration;
 import webhdfs.dataloader.application.WebHdfsDataLoaderConfiguration;
 
 /**
- * Notes: @WebAppConfiguration sets up, among other things,
- *        the servlet context. Without it, the following error
- *        occurs: "A ServletContext is required to configure default servlet handling"
- *        
  *        @ContextConfiguration - among other things, it loads the application context. 
  *        If it is not present, the following error occurs:
  *        "java.lang.IllegalArgumentException: Cannot load an ApplicationContext 
@@ -54,11 +50,15 @@ import webhdfs.dataloader.application.WebHdfsDataLoaderConfiguration;
  *        @ContextConfiguration or @ContextHierarchy.at 
  *        org.springframework.util.Assert.notNull(Assert.java:112) 
  *        ~[spring-core-4.1.5.RELEASE.jar:4.1.5.RELEASE]"
+ *        
+ *        Note: if ContextConfiguration includes the test - in this case 
+ *        WebHdfsDataLoaderEventHandlerTest, and the test extends 
+ *        AbstractTestNGSpringContextTests, the test will be initialized 
+ *        twice and the PostConstruct will be called two times.
  */
 @Slf4j
 @EnableAutoConfiguration
-@EnableConfigurationProperties (EventHandler.class)
-@ContextConfiguration(classes = { WebHdfsDataLoaderEventHandlerTest.class })
+@ContextConfiguration(classes = { EventHandler.class })
 public class WebHdfsDataLoaderEventHandlerTest extends AbstractTestNGSpringContextTests {
 	@Autowired private EventHandler<String, String> eventHandler; 
 	@Autowired private EventHandler<String, String> eventHandlerConsumer; 
@@ -91,7 +91,7 @@ public class WebHdfsDataLoaderEventHandlerTest extends AbstractTestNGSpringConte
 	        		Thread.sleep(3000);
 	        		break;
 	        	}
-				return "running";		
+				return "completed";		
 	        }
 	    });
 	}

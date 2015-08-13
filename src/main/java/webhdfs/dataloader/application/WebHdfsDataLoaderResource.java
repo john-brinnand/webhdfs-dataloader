@@ -2,8 +2,13 @@ package webhdfs.dataloader.application;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletRequest;
 
 import lombok.extern.slf4j.Slf4j;
@@ -11,12 +16,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import spongecell.spring.event_handler.EventHandler;
+import spongecell.spring.event_handler.consumer.EventHandlerGenericConsumerTest;
 import spongecell.spring.event_handler.message.RequestEvent;
 
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
@@ -25,15 +32,30 @@ import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 @RestController
 @RequestMapping("/v1/eventHandler")
 public class WebHdfsDataLoaderResource {
-	@Autowired private EventHandler eventHandler; 
+	@Autowired private EventHandler<String, RequestEvent> eventHandler; 
+	private final ExecutorService pool = Executors.newFixedThreadPool(1);
 
 	@PostConstruct
-	public void init() {
-		eventHandler.keyTranslatorType(String.class)
-			.valueTranslatorType(RequestEvent.class)
-			.build();
-		// TODO start the event handler in a thread here.
-		//************************************************
+	@Async
+	public Future<String> loadData() throws IOException {
+	    return pool.submit(new Callable<String>() {
+	        @Override
+	        public String call() throws Exception {
+	        	eventHandler.keyTranslatorType(String.class)
+	        		.valueTranslatorType(RequestEvent.class)
+	        		.build();
+	        	EventHandlerGenericConsumerTest<String, RequestEvent>  eventConsumer = 
+	    				new EventHandlerGenericConsumerTest<String, RequestEvent>();
+	    		eventHandler.readAll(eventHandler.getTopic(), eventConsumer);
+	    		
+				return null;		
+	        }
+	    });
+	}
+	
+	@PreDestroy 
+	public void shutdown () {
+		pool.shutdownNow();
 	}
 	
 	@RequestMapping("/ping")
@@ -49,6 +71,18 @@ public class WebHdfsDataLoaderResource {
 	public ResponseEntity<?> postRequestParamEndpoint(HttpServletRequest request,
 			@RequestParam(value = "id") String id) throws Exception {
 		String content = "Greetings " + id  + " from the postRequestParamEndpoint"; 
+		log.info("Returning : {} ", content);
+		ResponseEntity<String> response = new ResponseEntity<String>(content, HttpStatus.OK);
+		return response; 
+	}	
+	
+	@RequestMapping(method = RequestMethod.POST)
+	public ResponseEntity<?> eventHandlerAdmin(HttpServletRequest request,
+		 @RequestParam String op) throws Exception {
+		String content = "Greetings eventHandlerAdministrator."; 
+		if (op.equals("start")) {
+			// TODO add Future here.
+		}
 		log.info("Returning : {} ", content);
 		ResponseEntity<String> response = new ResponseEntity<String>(content, HttpStatus.OK);
 		return response; 
