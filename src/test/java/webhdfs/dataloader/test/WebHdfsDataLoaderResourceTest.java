@@ -68,6 +68,8 @@ public class WebHdfsDataLoaderResourceTest extends AbstractTestNGSpringContextTe
 			mvcResult.getResponse().getContentType(), 
 			mvcResult.getResponse().getContentAsString());
 		Assert.assertEquals(mvcResult.getResponse().getContentAsString(), data);
+		// Temporary
+		Thread.sleep(20000);
 	}
 	
 	@Test(priority = 1, groups = "integration")
