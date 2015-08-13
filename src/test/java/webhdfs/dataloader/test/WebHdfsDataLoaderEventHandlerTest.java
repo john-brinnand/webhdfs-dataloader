@@ -71,7 +71,6 @@ public class WebHdfsDataLoaderEventHandlerTest extends AbstractTestNGSpringConte
 	private static final String GROUP = "testGroup";
 	private final String msg = "validateEventHandlerFuture says - 'Greetings' "; 
 	
-//	@PostConstruct
 	public EventHandlerGenericConsumerTest<String, String> loadData() throws IOException {
 	    Future<EventHandlerGenericConsumerTest<String, String>> rval =  pool.submit(
 	    		new Callable<EventHandlerGenericConsumerTest<String, String>>() {
@@ -98,11 +97,6 @@ public class WebHdfsDataLoaderEventHandlerTest extends AbstractTestNGSpringConte
 			log.error("Thread interrupted.");
 		}
 	    return eventConsumer;
-	}
-	
-	@PreDestroy 
-	public void shutdown () {
-		pool.shutdownNow();
 	}
 	
 	@Test(priority = 1, groups = "integration")
@@ -133,7 +127,13 @@ public class WebHdfsDataLoaderEventHandlerTest extends AbstractTestNGSpringConte
 	
 	@AfterTest
 	public void afterTest() throws InterruptedException {
-		Thread.sleep(5000);
-		log.info("Here");
+		pool.shutdown();
+		pool.awaitTermination(5000, TimeUnit.MILLISECONDS);
+		if (!pool.isShutdown()) {
+			log.info ("Pool is not shutdown.");
+			pool.shutdownNow();
+		}	
+		Assert.assertEquals(pool.isShutdown(), true);
+		log.info("Pool shutdown status : {}", pool.isShutdown());
 	}
 }	
