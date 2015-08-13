@@ -2,13 +2,7 @@ package webhdfs.dataloader.application;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
@@ -20,14 +14,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import spongecell.spring.event_handler.EventHandler;
-import spongecell.spring.event_handler.consumer.EventHandlerGenericConsumerTest;
 import spongecell.spring.event_handler.message.RequestEvent;
 
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
@@ -37,55 +29,20 @@ import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 @RequestMapping("/v1/eventHandler")
 public class WebHdfsDataLoaderResource {
 	@Autowired private EventHandler<String, RequestEvent> eventHandler; 
-	ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
+	private @Autowired EventHandlerJobScheduler scheduler;
 
-	public void runLoader() throws IOException, InterruptedException {
-		do {
-			EventHandlerGenericConsumerTest<String, RequestEvent> eventConsumer = loadData();
-			if (eventConsumer == null || eventConsumer.getTopic() == null) {
-				Thread.sleep(3000);
-			}
-		} while (pool.isShutdown() == false);
-	}
-	
 	@PostConstruct
-	private EventHandlerGenericConsumerTest<String, RequestEvent> loadData() throws IOException {
-	    Future<EventHandlerGenericConsumerTest<String, RequestEvent>> rval =  pool.schedule(
-	    	new Callable<EventHandlerGenericConsumerTest<String, RequestEvent>>() {
-		        @Override
-		        public EventHandlerGenericConsumerTest<String, RequestEvent> call() throws Exception {
-		        	log.info("Running in callable.");
-		        	eventHandler
-		        		.keyTranslatorType(String.class)
-		        		.valueTranslatorType(RequestEvent.class)
-		        		.build();
-		        	EventHandlerGenericConsumerTest<String, RequestEvent>  eventConsumer = 
-		    				new EventHandlerGenericConsumerTest<String, RequestEvent>();
-		        	eventHandler.readAll("", eventConsumer);
-	
-					return eventConsumer; 
-		        }
-	    }, 1000, TimeUnit.MILLISECONDS);
-	    log.info("Returned from callable.");
-//	    EventHandlerGenericConsumerTest<String, RequestEvent> eventConsumer = null;
-//	    try {
-//	    	eventConsumer = rval.get();
-//		} catch (InterruptedException | ExecutionException e) {
-//			log.error("Thread interrupted.");
-//		}
-	    return null;
+	public void loadData() {
+		try {
+			scheduler.loadData();
+		} catch (TimeoutException | InterruptedException | ExecutionException e) {
+			log.info("ERROR - scheduler load data has failed: {}", e );
+		}
 	}
 	
 	@PreDestroy 
 	public void shutdown () throws InterruptedException {
-		pool.shutdown();
-		pool.awaitTermination(5000, TimeUnit.MILLISECONDS);
-		if (!pool.isShutdown()) {
-			log.info ("Pool is not shutdown.");
-			pool.shutdownNow();
-		}	
-		Assert.isTrue(pool.isShutdown());
-		log.info("Pool shutdown status : {}", pool.isShutdown());
+		scheduler.shutdown();
 	}
 	
 	@RequestMapping("/ping")

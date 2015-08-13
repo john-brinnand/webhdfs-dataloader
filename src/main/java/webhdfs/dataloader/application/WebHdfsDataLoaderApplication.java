@@ -10,7 +10,11 @@ import spongecell.spring.event_handler.EventHandler;
 
 @SpringBootApplication
 @EnableAutoConfiguration
-@EnableConfigurationProperties({ WebHdfsDataLoaderConfiguration.class, EventHandler.class })
+@EnableConfigurationProperties({ 
+	WebHdfsDataLoaderConfiguration.class, 
+	EventHandler.class, 
+	EventHandlerJobScheduler.class 
+})
 @EnableWebMvc
 public class WebHdfsDataLoaderApplication {
     public static void main(String[] args) {
