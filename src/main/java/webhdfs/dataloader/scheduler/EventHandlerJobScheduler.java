@@ -19,8 +19,9 @@ import spongecell.spring.event_handler.consumer.EventHandlerGenericConsumerTest;
 
 @Slf4j
 @Getter
-@EnableConfigurationProperties({ EventHandler.class })
+@EnableConfigurationProperties({ EventHandler.class, EventHandlerJobSchedulerConfiguration.class })
 public class EventHandlerJobScheduler {
+	@Autowired EventHandlerJobSchedulerConfiguration eventHandlerJobSchedulerConfig;
 	@Autowired private EventHandler<String, String> eventHandlerConsumer; 
 	private final EventHandlerGenericConsumerTest<String, String>  eventGenericConsumer
 					= new EventHandlerGenericConsumerTest<String, String>();
@@ -43,6 +44,10 @@ public class EventHandlerJobScheduler {
 			.keyTranslatorType(String.class)
 			.valueTranslatorType(String.class)
 			.build();	
+		Integer initialDelay = eventHandlerJobSchedulerConfig.getInitialDelay();
+		Integer period = eventHandlerJobSchedulerConfig.getPeriod();
+		TimeUnit timeUnit = eventHandlerJobSchedulerConfig.getTimeUnit();
+		
 		ScheduledFuture<?> future = pool.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
@@ -50,7 +55,7 @@ public class EventHandlerJobScheduler {
 						eventGenericConsumer);
 				log.info ("------------------------------------------");
 			}
-		}, 1, 3000, TimeUnit.MILLISECONDS);
+		}, initialDelay, period, timeUnit);
 
 		return eventGenericConsumer; 
 	}
