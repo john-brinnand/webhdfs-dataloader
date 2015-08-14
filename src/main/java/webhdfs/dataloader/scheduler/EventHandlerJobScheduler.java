@@ -56,9 +56,12 @@ public class EventHandlerJobScheduler {
 		ScheduledFuture<?> future = pool.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
+				final long endTime;
+				final long startTime = System.currentTimeMillis();
 				eventHandlerConsumer.readAll(eventHandlerConsumer.getTopic(), 
 						eventConsumer);
-				log.info ("------------------------------------------");
+				endTime = System.currentTimeMillis();
+				log.info ("------------------  Load Completed  in {} ", endTime - startTime,  "  ------------------------");
 			}
 		}, initialDelay, period, timeUnit);
 

@@ -67,7 +67,7 @@ public class EventHandlerConsumer<K, V> implements MessageConsumer<K, V>  {
 						.writeValueAsString( value ) )
 				.append("\n");
 
-			log.info( stringBuilder.toString() );
+			log.debug( stringBuilder.toString() );
 			StringEntity entity = new StringEntity(stringBuilder.toString());
 			
 			CloseableHttpResponse response = null; 
@@ -78,7 +78,6 @@ public class EventHandlerConsumer<K, V> implements MessageConsumer<K, V>  {
 			}
 			else {
 				response = webHdfs.append(entity);
-				log.info("************************** Back from append.");
 				Assert.notNull(response, "Invalid response - value is null");
 			}
 		} catch( JsonProcessingException | 

@@ -66,7 +66,7 @@ public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpring
 			.valueTranslatorType(String.class)
 			.build();
 		try {
-			for (int i = 0; i < 100; i++) {
+			for (int i = 0; i < 500; i++) {
 				handler.write(topic, key, msg);
 			}
 			handler.writerClose();
@@ -82,7 +82,7 @@ public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpring
     	Assert.assertEquals(eventConsumer.getKey(), key);
     	Assert.assertEquals(eventConsumer.getTopic(), topic);		
     	Assert.assertEquals(eventConsumer.getValue(), msg);		
-    	Thread.sleep(20000);
+    	Thread.sleep(25000);
 	}
 	
 	@AfterTest

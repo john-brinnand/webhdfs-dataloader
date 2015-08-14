@@ -3,6 +3,8 @@ package webhdfs.dataloader;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -31,6 +33,7 @@ import webhdfs.dataloader.exception.WebHdfsException;
 public class WebHdfs {
 	private WebHdfsConfiguration webHdfsConfig;
 	private CloseableHttpClient httpClient;
+	private Map<String, URI> uriMap; 
 	
 	public WebHdfs () {}
 	
@@ -47,6 +50,7 @@ public class WebHdfs {
 			webHdfsConfig.setUser(builder.user);
 		}
 		httpClient = HttpClients.createDefault();
+		uriMap = new HashMap<String, URI>();
 	}
 
 	@EnableConfigurationProperties ({ WebHdfsConfiguration.class })
@@ -131,33 +135,38 @@ public class WebHdfs {
 	}
 	
 	public CloseableHttpResponse append (final StringEntity entity) throws URISyntaxException {
-		final URI uri = new URIBuilder()
-			.setScheme(webHdfsConfig.getScheme())
-			.setHost(webHdfsConfig.getHost())
-			.setPort(webHdfsConfig.getPort())
-			.setPath(webHdfsConfig.getWEBHDFS_PREFIX()
-				+ webHdfsConfig.getPath() + "/" 
-				+ webHdfsConfig.getFileName())
-			.setParameter("overwrite", webHdfsConfig.getOverwrite())
-			.setParameter("user", webHdfsConfig.getUser())
-			.setParameter("op", "APPEND")
-			.build();
-
-		HttpPost httpPost = new HttpPost(uri);
-		
+		HttpPost httpPost = null;
+		URI uri = null;
+		if ((uri = uriMap.get("appendURI")) != null) {
+			httpPost = new HttpPost(uri);
+		}
+		else {
+			uri = new URIBuilder()
+				.setScheme(webHdfsConfig.getScheme())
+				.setHost(webHdfsConfig.getHost())
+				.setPort(webHdfsConfig.getPort())
+				.setPath(webHdfsConfig.getWEBHDFS_PREFIX()
+					+ webHdfsConfig.getPath() + "/" 
+					+ webHdfsConfig.getFileName())
+				.setParameter("overwrite", webHdfsConfig.getOverwrite())
+				.setParameter("user", webHdfsConfig.getUser())
+				.setParameter("op", "APPEND")
+				.build();
+			uriMap.put("appendURI", uri);
+			httpPost = new HttpPost(uriMap.get("appendURI"));
+		}
 		log.info ("URI is : {} ", httpPost.getURI().toString());
 		
 		CloseableHttpResponse response = null;
 		try {
-//			response = httpClient.execute(httpPost);
+			// Append appears to require a new HTTP
+			// client for every operation.
+			//**************************************
 			CloseableHttpClient client = HttpClients.createDefault();
 			response = client.execute(httpPost);
 			Assert.notNull(response);
-			log.info("Response status code {} ", 
-				response.getStatusLine().getStatusCode());
 			Assert.isTrue(response.getStatusLine().getStatusCode() == 307, 
-				"Response code indicates a failed write");	
-			
+					"Response code indicates a failed write");	
 			response = write(response, httpPost, HttpServletResponse.SC_OK, entity);
 			
 			// Closes all resources.
@@ -165,7 +174,7 @@ public class WebHdfs {
 			response.close();
 		} catch (IOException e) {
 			throw new WebHdfsException("ERROR - failure to get redirect URL: "
-					+ uri.toString(), e);
+					+ uriMap.get("appendURI").toString(), e);
 		}	
 		httpPost.completed();
 		return response;
@@ -261,7 +270,7 @@ public class WebHdfs {
 		//*************************************************
 		Header[] header = response.getHeaders("Location");
 		Assert.notNull(header);
-		log.info(header[0].toString());
+		log.debug(header[0].toString());
 		String redirectUrl = header[0].toString().substring("Location:0".length());
 
 		URI uri = null; 
@@ -270,10 +279,10 @@ public class WebHdfs {
 			
 			httpRequest.setURI(uri);
 			httpRequest.setEntity(entity);
-			log.info ("Entity is : {} ", EntityUtils.toString(httpRequest.getEntity()));
+			log.debug ("Entity is : {} ", EntityUtils.toString(httpRequest.getEntity()));
 			
 			response = httpClient.execute(httpRequest);
-			log.info("Response status code {} ", response.getStatusLine().getStatusCode());
+			log.debug("Response status code {} ", response.getStatusLine().getStatusCode());
 			Assert.isTrue(response.getStatusLine().getStatusCode() == responseCode, 
 				"Response code indicates a failed write");
 			
