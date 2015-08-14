@@ -16,15 +16,20 @@ import org.springframework.util.Assert;
 
 import spongecell.spring.event_handler.EventHandler;
 import spongecell.spring.event_handler.consumer.EventHandlerGenericConsumerTest;
+import webhdfs.dataloader.consumer.EventHandlerConsumer;
 
 @Slf4j
 @Getter
-@EnableConfigurationProperties({ EventHandler.class, EventHandlerJobSchedulerConfiguration.class })
+@EnableConfigurationProperties({ 
+	EventHandler.class, 
+	EventHandlerJobSchedulerConfiguration.class, 
+	EventHandlerConsumer.class 
+})
 public class EventHandlerJobScheduler {
 	@Autowired EventHandlerJobSchedulerConfiguration eventHandlerJobSchedulerConfig;
 	@Autowired private EventHandler<String, String> eventHandlerConsumer; 
-	private final EventHandlerGenericConsumerTest<String, String>  eventGenericConsumer
-					= new EventHandlerGenericConsumerTest<String, String>();
+	@Autowired final EventHandlerConsumer<String, String>  eventConsumer
+					= new EventHandlerConsumer<String, String>();
 	private final ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
 		
 	/**
@@ -35,7 +40,7 @@ public class EventHandlerJobScheduler {
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
-	public EventHandlerGenericConsumerTest<String, String> loadData() 
+	public EventHandlerConsumer<String, String> loadData() 
 			throws TimeoutException, InterruptedException, ExecutionException {
 		eventHandlerConsumer
 			.groupId("testGroup")
@@ -52,12 +57,12 @@ public class EventHandlerJobScheduler {
 			@Override
 			public void run() {
 				eventHandlerConsumer.readAll(eventHandlerConsumer.getTopic(), 
-						eventGenericConsumer);
+						eventConsumer);
 				log.info ("------------------------------------------");
 			}
 		}, initialDelay, period, timeUnit);
 
-		return eventGenericConsumer; 
+		return eventConsumer; 
 	}
 	/**
 	 * Shutdown the executor.

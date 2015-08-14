@@ -1,9 +1,6 @@
 package webhdfs.dataloader.test;
 
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
@@ -20,8 +17,8 @@ import org.testng.annotations.Test;
 
 import spongecell.spring.event_handler.EventHandler;
 import spongecell.spring.event_handler.IEventHandler;
-import spongecell.spring.event_handler.consumer.EventHandlerGenericConsumerTest;
 import spongecell.spring.event_handler.exception.InvalidTranslatorException;
+import webhdfs.dataloader.consumer.EventHandlerConsumer;
 import webhdfs.dataloader.scheduler.EventHandlerJobScheduler;
 
 /**
@@ -44,7 +41,6 @@ import webhdfs.dataloader.scheduler.EventHandlerJobScheduler;
 public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpringContextTests {
 	@Autowired private EventHandler<String, String> eventHandler; 
 	@Autowired private EventHandler<String, String> eventHandlerConsumer; 
-	private ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
 	private final String topic = "audience-server-bluekai"; 
 	private final String key = "key.0"; 	
 	private static final String GROUP = "testGroup";
@@ -62,8 +58,6 @@ public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpring
 	
 	@Test(priority = 1, groups = "integration")
 	public void validateEventHandlerFuture() throws Exception {
-		Assert.assertEquals(pool.isShutdown(), false);
-		
 		IEventHandler<String,String> handler = eventHandler
 			.groupId(GROUP)
 			.topic(topic)
@@ -72,13 +66,16 @@ public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpring
 			.valueTranslatorType(String.class)
 			.build();
 		try {
-			handler.write(topic, key, msg);
+			for (int i = 0; i < 100; i++) {
+				handler.write(topic, key, msg);
+			}
+			handler.writerClose();
 		} catch (InvalidTranslatorException e) {
 			log.info ("ERROR - failed to write: {} ", e);
 		}
-		EventHandlerGenericConsumerTest<String, String> eventConsumer;
+		EventHandlerConsumer<String, String> eventConsumer;
 		do {
-			eventConsumer = scheduler.getEventGenericConsumer();
+			eventConsumer = scheduler.getEventConsumer();
 			Thread.sleep(2000);
 		} while (eventConsumer.getKey() == null);
 	
@@ -89,14 +86,5 @@ public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpring
 	}
 	
 	@AfterTest
-	public void afterTest() throws InterruptedException {
-		pool.shutdown();
-		pool.awaitTermination(5000, TimeUnit.MILLISECONDS);
-		if (!pool.isShutdown()) {
-			log.info ("Pool is not shutdown.");
-			pool.shutdownNow();
-		}	
-		Assert.assertEquals(pool.isShutdown(), true);
-		log.info("Pool shutdown status : {}", pool.isShutdown());
-	}
+	public void afterTest() {}
 }	

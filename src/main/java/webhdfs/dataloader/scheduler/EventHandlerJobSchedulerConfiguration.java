@@ -11,7 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix ="eventhandler.scheduler")
 public class EventHandlerJobSchedulerConfiguration {
 	public Integer initialDelay = 1;
-	public Integer period = 3;
+	public Integer period = 3000;
 	public TimeUnit timeUnit = TimeUnit.MILLISECONDS;
 	
 }

@@ -149,7 +149,9 @@ public class WebHdfs {
 		
 		CloseableHttpResponse response = null;
 		try {
-			response = httpClient.execute(httpPost);
+//			response = httpClient.execute(httpPost);
+			CloseableHttpClient client = HttpClients.createDefault();
+			response = client.execute(httpPost);
 			Assert.notNull(response);
 			log.info("Response status code {} ", 
 				response.getStatusLine().getStatusCode());
@@ -157,7 +159,6 @@ public class WebHdfs {
 				"Response code indicates a failed write");	
 			
 			response = write(response, httpPost, HttpServletResponse.SC_OK, entity);
-			httpPost.completed();
 			
 			// Closes all resources.
 			//**********************
@@ -166,6 +167,7 @@ public class WebHdfs {
 			throw new WebHdfsException("ERROR - failure to get redirect URL: "
 					+ uri.toString(), e);
 		}	
+		httpPost.completed();
 		return response;
 	}	
 	
