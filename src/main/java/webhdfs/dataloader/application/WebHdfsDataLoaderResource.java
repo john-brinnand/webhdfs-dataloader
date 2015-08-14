@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import spongecell.spring.event_handler.EventHandler;
 import spongecell.spring.event_handler.message.RequestEvent;
+import webhdfs.dataloader.scheduler.EventHandlerJobScheduler;
 
 import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 

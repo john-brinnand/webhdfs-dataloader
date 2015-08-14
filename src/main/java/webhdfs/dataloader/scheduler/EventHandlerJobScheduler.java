@@ -1,4 +1,4 @@
-package webhdfs.dataloader.application;
+package webhdfs.dataloader.scheduler;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;

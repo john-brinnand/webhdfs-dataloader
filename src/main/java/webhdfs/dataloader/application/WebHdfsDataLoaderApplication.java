@@ -7,6 +7,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import spongecell.spring.event_handler.EventHandler;
+import webhdfs.dataloader.scheduler.EventHandlerJobScheduler;
 
 @SpringBootApplication
 @EnableAutoConfiguration

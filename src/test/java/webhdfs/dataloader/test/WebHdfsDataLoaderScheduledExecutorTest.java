@@ -1,52 +1,28 @@
 package webhdfs.dataloader.test;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-
-import java.io.IOException;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.testng.Assert;
 import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import spongecell.spring.event_handler.EventHandler;
 import spongecell.spring.event_handler.IEventHandler;
 import spongecell.spring.event_handler.consumer.EventHandlerGenericConsumerTest;
 import spongecell.spring.event_handler.exception.InvalidTranslatorException;
-import spongecell.spring.event_handler.message.RequestEvent;
-import webhdfs.dataloader.WebHdfs;
-import webhdfs.dataloader.WebHdfsConfiguration;
-import webhdfs.dataloader.application.EventHandlerJobScheduler;
-import webhdfs.dataloader.application.WebHdfsDataLoaderConfiguration;
+import webhdfs.dataloader.scheduler.EventHandlerJobScheduler;
 
 /**
  *        @ContextConfiguration - among other things, it loads the application context. 
