@@ -47,7 +47,6 @@ public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpring
 	private final String topic = "audience-server-bluekai"; 
 	private final String key = "key.0"; 	
 	private static final String GROUP = "testGroup";
-	private final String msg = "validateEventHandlerFuture says - 'Greetings' "; 
 	private @Autowired EventHandlerJobScheduler scheduler;
 	private String data;
 	
@@ -83,6 +82,7 @@ public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpring
 		} catch (InvalidTranslatorException e) {
 			log.info ("ERROR - failed to write: {} ", e);
 		}
+		Thread.sleep(25000);
 		EventHandlerConsumer<String, String> eventConsumer;
 		do {
 			eventConsumer = scheduler.getEventConsumer();
@@ -91,8 +91,7 @@ public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpring
 	
     	Assert.assertEquals(eventConsumer.getKey(), key);
     	Assert.assertEquals(eventConsumer.getTopic(), topic);		
-//    	Assert.assertEquals(eventConsumer.getValue(), data);		
-    	Thread.sleep(25000);
+    	Assert.assertEquals(eventConsumer.getValue(), data);		
 	}
 	
 	/**
