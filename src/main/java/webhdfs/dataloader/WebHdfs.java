@@ -28,6 +28,8 @@ import org.springframework.util.Assert;
 
 import webhdfs.dataloader.exception.WebHdfsException;
 
+import static webhdfs.dataloader.WebHdfsParams.*;
+
 
 @Slf4j
 public class WebHdfs {
@@ -100,8 +102,8 @@ public class WebHdfs {
 					+ webHdfsConfig.getPath() + "/" 
 					+ webHdfsConfig.getFileName())
 				.setParameter("overwrite", webHdfsConfig.getOverwrite())
-				.setParameter("user", webHdfsConfig.getUser())
-				.setParameter("op", "CREATE")
+				.setParameter(USER, webHdfsConfig.getUser())
+				.setParameter(OP, CREATE)
 				.build();
 		} catch (URISyntaxException e) {
 			throw new WebHdfsException("ERROR - failure to create URI. Cause is:  ", e);	
@@ -149,8 +151,8 @@ public class WebHdfs {
 					+ webHdfsConfig.getPath() + "/" 
 					+ webHdfsConfig.getFileName())
 				.setParameter("overwrite", webHdfsConfig.getOverwrite())
-				.setParameter("user", webHdfsConfig.getUser())
-				.setParameter("op", "APPEND")
+				.setParameter(USER, webHdfsConfig.getUser())
+				.setParameter(OP, APPEND)	
 				.build();
 			uriMap.put("appendURI", uri);
 			httpPost = new HttpPost(uriMap.get("appendURI"));
@@ -198,8 +200,8 @@ public class WebHdfs {
 						+ webHdfsConfig.getPath() + "/" 
 						+ webHdfsConfig.getFileName())
 				.setParameter("overwrite", "false")
-				.setParameter("user", webHdfsConfig.getUser())
-				.setParameter("op", "GETFILESTATUS")
+				.setParameter(USER, webHdfsConfig.getUser())
+				.setParameter(OP, GETFILESTATUS)				
 				.build();
 			
 			HttpGet httpMethod = new HttpGet(uri);
@@ -245,8 +247,8 @@ public class WebHdfs {
 				.setPort(webHdfsConfig.getPort())
 				.setPath(fileName)
 				.setParameter("overwrite", "false")
-				.setParameter("user", webHdfsConfig.getUser())
-				.setParameter("op", "LISTSTATUS")
+				.setParameter(USER, webHdfsConfig.getUser())
+				.setParameter(OP, LISTSTATUS)	
 				.build();
 			
 			HttpGet httpMethod = new HttpGet(uri);
@@ -260,6 +262,35 @@ public class WebHdfs {
 		}
 		log.info("Returning http response. Status code is: {}", 
 			response.getStatusLine().getStatusCode());
+		return response;
+	}
+	
+	public CloseableHttpResponse getContentSummary (String fileName) {
+		CloseableHttpResponse response = null;
+		try {
+			final URI uri = new URIBuilder()
+			.setScheme(webHdfsConfig.getScheme())
+			.setHost(webHdfsConfig.getHost())
+			.setPort(webHdfsConfig.getPort())
+			.setPath(webHdfsConfig.getWEBHDFS_PREFIX()
+					+ webHdfsConfig.getPath() + "/" 
+					+ fileName)
+			.setParameter("overwrite", "false")
+			.setParameter(USER, webHdfsConfig.getUser())
+			.setParameter(OP, GETCONTENTSUMMARY)
+			.build();
+
+			HttpGet httpMethod = new HttpGet(uri);
+			response = httpClient.execute(httpMethod);
+			Assert.notNull(response);
+			Assert.isTrue(response.getStatusLine().getStatusCode() == 200, 
+					"Response code indicates a failed write");	
+
+		} catch (URISyntaxException | IOException e) {
+			log.error("ERROR -  ");
+		}
+		log.info("Returning http response. Status code is: {}", 
+				response.getStatusLine().getStatusCode());
 		return response;
 	}
 	

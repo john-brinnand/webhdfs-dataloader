@@ -207,4 +207,27 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 			Assert.assertEquals(fileStatusNode.get("owner").asText(), "dr.who");	
 		}
 	}
+	
+	@Test(dependsOnMethods="validateWebHdfsCreate")
+	public void validateWebHdfsGetContentSummary() throws URISyntaxException, IOException {
+		Assert.assertNotNull(webHdfsBuilder);
+		
+		WebHdfs webHdfs = webHdfsBuilder.build();
+		Assert.assertNotNull(webHdfs);
+		
+		CloseableHttpResponse response = webHdfs.getContentSummary(webHdfsConfig.getFileName());
+		Assert.assertNotNull(response);
+		Assert.assertEquals(response.getStatusLine().getStatusCode(), 200);
+		
+		//****************************************
+		ObjectNode contentSummary = new ObjectMapper().readValue(
+				EntityUtils.toString(response.getEntity()), 
+				new TypeReference<ObjectNode>() {
+			});
+		log.info("File status is: {} ", new ObjectMapper()
+			.writerWithDefaultPrettyPrinter()
+			.writeValueAsString(contentSummary));
+			
+		Assert.assertNotNull(contentSummary.get("directoryCount"));
+	}
 }
