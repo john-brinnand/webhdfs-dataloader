@@ -1,5 +1,7 @@
 package webhdfs.dataloader.test;
 
+import java.io.InputStream;
+import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -13,6 +15,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import spongecell.spring.event_handler.EventHandler;
@@ -46,6 +49,13 @@ public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpring
 	private static final String GROUP = "testGroup";
 	private final String msg = "validateEventHandlerFuture says - 'Greetings' "; 
 	private @Autowired EventHandlerJobScheduler scheduler;
+	private String data;
+	
+	@BeforeTest
+	public void beforeTest() {
+		data = readFile("/creative-event-data.json");
+	}	
+		
 	
 	@PostConstruct
 	public void loadData() {
@@ -66,8 +76,8 @@ public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpring
 			.valueTranslatorType(String.class)
 			.build();
 		try {
-			for (int i = 0; i < 500; i++) {
-				handler.write(topic, key, msg);
+			for (int i = 0; i < 1; i++) {
+				handler.write(topic, key, data);
 			}
 			handler.writerClose();
 		} catch (InvalidTranslatorException e) {
@@ -81,10 +91,29 @@ public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpring
 	
     	Assert.assertEquals(eventConsumer.getKey(), key);
     	Assert.assertEquals(eventConsumer.getTopic(), topic);		
-    	Assert.assertEquals(eventConsumer.getValue(), msg);		
-    	Thread.sleep(25000);
+    	Assert.assertEquals(eventConsumer.getValue(), data);		
+    	Thread.sleep(125000);
 	}
 	
+	/**
+	 * Might be better to have this in a common library
+	 * 
+	 * @param resourceName
+	 * @return
+	 * @throws FileNotFoundException
+	 */
+	private String readFile(String resourceName) {
+		InputStream inputStream = this.getClass().getResourceAsStream(
+				resourceName);
+
+		if (inputStream == null) {
+			log.debug("No inputStream");
+		}
+		Scanner scanner = new java.util.Scanner(inputStream);
+		String content = scanner.useDelimiter("\\Z").next();
+		scanner.close();
+		return content;
+	}		
 	@AfterTest
 	public void afterTest() {}
 }	
