@@ -12,8 +12,11 @@ public class WebHdfsConfiguration {
 	public String fileName = "testfile.txt";
 	public int port = 50070;
 	public String path = "/data";
+	public String baseDir = "/data";
 	public String host = "dockerhadoop";
 	public String user = "root";
+	public String owner = "spongecell";
+	public String group = "supergroup";
 	public String overwrite = "true";
 	public String WEBHDFS_PREFIX = "/webhdfs/v1";
 	

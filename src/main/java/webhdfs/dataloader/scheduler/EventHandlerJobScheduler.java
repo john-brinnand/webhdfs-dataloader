@@ -15,13 +15,14 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.util.Assert;
 
 import spongecell.spring.event_handler.EventHandler;
-import spongecell.spring.event_handler.consumer.EventHandlerGenericConsumerTest;
 import webhdfs.dataloader.consumer.EventHandlerConsumer;
 
 @Slf4j
 @Getter
 @EnableConfigurationProperties({ EventHandler.class,
-		EventHandlerJobSchedulerConfiguration.class, EventHandlerConsumer.class })
+		EventHandlerJobSchedulerConfiguration.class, 
+		EventHandlerConsumer.class 
+})
 public class EventHandlerJobScheduler {
 	@Autowired
 	EventHandlerJobSchedulerConfiguration eventHandlerJobSchedulerConfig;

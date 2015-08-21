@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @Slf4j
+@Getter
 public class WebHdfsWorkFlow {
 	private Map<String, WebHdfsOpsArgs> workFlow;
 	private WebHdfs webHdfs;

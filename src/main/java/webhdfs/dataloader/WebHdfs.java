@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.http.Header;
@@ -35,6 +36,7 @@ import static webhdfs.dataloader.WebHdfsParams.*;
 
 
 @Slf4j
+@Getter
 public class WebHdfs {
 	private WebHdfsConfiguration webHdfsConfig;
 	private CloseableHttpClient httpClient;

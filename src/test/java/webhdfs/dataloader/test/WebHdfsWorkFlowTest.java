@@ -23,6 +23,7 @@ import webhdfs.dataloader.WebHdfsWorkFlow;
 @EnableConfigurationProperties ({ WebHdfsConfiguration.class })
 public class WebHdfsWorkFlowTest extends AbstractTestNGSpringContextTests{
 	@Autowired WebHdfsWorkFlow.Builder webHdfsWorkFlowBuilder;
+	@Autowired WebHdfsConfiguration webHdfsConfig;
 
 	@Test
 	public void validateCreateWorkFlow() throws NoSuchMethodException,
@@ -58,4 +59,35 @@ public class WebHdfsWorkFlowTest extends AbstractTestNGSpringContextTests{
 		Assert.assertNotNull(response);
 		Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.OK.value());
 	}
+	@Test
+	public void validateWorkFlowConfiguration() throws NoSuchMethodException,
+			SecurityException, UnsupportedEncodingException, URISyntaxException {
+		Assert.assertNotNull(webHdfsWorkFlowBuilder);
+		StringEntity entity = new StringEntity("Greetings earthling!\n");
+		LinkedList<Object> args = new LinkedList<Object>();
+		args.add(0, webHdfsConfig.getBaseDir());
+		args.add(1, entity);
+		args.add(2, webHdfsConfig.getBaseDir() + 
+			"/" + webHdfsConfig.getFileName());
+		args.add(3, webHdfsConfig.getOwner());
+		args.add(4, webHdfsConfig.getGroup());
+		args.add(5, webHdfsConfig.getBaseDir());
+		args.add(6, webHdfsConfig.getOwner());
+		args.add(7, webHdfsConfig.getGroup());
+		
+		WebHdfsOpsArgs mkdirOpArgs = new WebHdfsOpsArgs(WebHdfsOps.MKDIRS, args.subList(0,1).toArray());
+		WebHdfsOpsArgs createOpArgs = new WebHdfsOpsArgs(WebHdfsOps.CREATE, args.subList(1,2).toArray());
+		WebHdfsOpsArgs setFileOwnerOpArgs = new WebHdfsOpsArgs(WebHdfsOps.SETOWNER, args.subList(2, 5).toArray());
+		WebHdfsOpsArgs setDirOwnerOpArgs = new WebHdfsOpsArgs(WebHdfsOps.SETOWNER, args.subList(5, args.size()).toArray());
+		
+		WebHdfsWorkFlow workFlow = webHdfsWorkFlowBuilder
+			.addEntry("CreateBaseDir", mkdirOpArgs)
+			.addEntry("SetBaseDirOwner", setDirOwnerOpArgs)
+			.addEntry("CreateAndWriteToFile", createOpArgs)
+			.addEntry("SetFileOwner", setFileOwnerOpArgs)
+			.build();
+		CloseableHttpResponse response = workFlow.execute(); 
+		Assert.assertNotNull(response);
+		Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.OK.value());
+	}	
 }
