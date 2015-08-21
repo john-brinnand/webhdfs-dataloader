@@ -1,5 +1,6 @@
 package webhdfs.dataloader;
 
+import java.net.URISyntaxException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -9,16 +10,19 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.entity.AbstractHttpEntity;
+import org.apache.http.entity.StringEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @Slf4j
 public class WebHdfsWorkFlow {
 	private Map<WebHdfsOps, Object[]> workflow;
+	private Map<String, WebHdfsOpsArgs> workFlow;
 	private WebHdfs webHdfs;
 	
 	private WebHdfsWorkFlow(Builder builder) {
 		this.workflow = builder.workflow;
+		this.workFlow = builder.workFlow;
 		webHdfs = builder.webHdfsBuilder
 			.fileName(builder.fileName)
 			.user(builder.user)
@@ -33,14 +37,20 @@ public class WebHdfsWorkFlow {
 		private String fileName;
 		private String user;
 		private String overwrite;
+		private Map<String, WebHdfsOpsArgs> workFlow;
 
 		public Builder() {
 			workflow = new LinkedHashMap<WebHdfsOps, Object[]>();
+			workFlow = new LinkedHashMap<String, WebHdfsOpsArgs>();
 		}
 		
-		public Builder addEntry(WebHdfsOps op, Object...args) throws NoSuchMethodException, SecurityException {
+		public Builder addEntry(WebHdfsOps op, Object...args) {
 			log.info("WorkFlow entry is: {} ", op);
 			workflow.put(op, args);
+			return this;
+		}
+		public Builder addEntry(String step, WebHdfsOpsArgs opsArgs) {
+			this.workFlow.put(step, opsArgs);
 			return this;
 		}
 		
@@ -63,37 +73,40 @@ public class WebHdfsWorkFlow {
 			return new WebHdfsWorkFlow(this);
 		}
 	}
-	public CloseableHttpResponse execute() {
+	public CloseableHttpResponse execute() throws URISyntaxException {
 		CloseableHttpResponse response = null;
-		Set<Entry<WebHdfsOps, Object[]>>entries = workflow.entrySet();
-		for (Entry<WebHdfsOps, Object[]>entry : entries) {
-			if (entry.getKey().equals(WebHdfsOps.LISTSTATUS)) {
-				response = webHdfs.listStatus((String)entry.getValue()[0]);
+		Set<Entry<String, WebHdfsOpsArgs>>entries = workFlow.entrySet();
+		for (Entry<String, WebHdfsOpsArgs>entry : entries) {
+			WebHdfsOpsArgs opsArgs = entry.getValue();
+			log.info("Executing step : {} ", entry.getKey());
+			if (opsArgs.getWebHdfsOp().equals(WebHdfsOps.LISTSTATUS)) {
+				response = webHdfs.listStatus((String)opsArgs.getArgs()[0]);
 				continue;
 			}
-			if (entry.getKey().equals(WebHdfsOps.GETFILESTATUS)) {
-				response = webHdfs.getFileStatus((String)entry.getValue()[0]);
+			if (opsArgs.getWebHdfsOp().equals(WebHdfsOps.GETFILESTATUS)) {
+				response = webHdfs.getFileStatus((String)opsArgs.getArgs()[0]);
 				continue;
 			}					
-			if (entry.getKey().equals(WebHdfsOps.CREATE)) {
-				response = webHdfs.create((AbstractHttpEntity)entry.getValue()[0]);
+			if (opsArgs.getWebHdfsOp().equals(WebHdfsOps.CREATE)) {
+				response = webHdfs.create((AbstractHttpEntity)opsArgs.getArgs()[0]);
 				continue;
 			}
-			if (entry.getKey().equals(WebHdfsOps.APPEND)) {
-				response = webHdfs.create((AbstractHttpEntity)entry.getValue()[0]);
+			if (opsArgs.getWebHdfsOp().equals(WebHdfsOps.APPEND)) {
+				response = webHdfs.append((StringEntity)opsArgs.getArgs()[0]);
 				continue;
 			}	
-			if (entry.getKey().equals(WebHdfsOps.MKDIRS)) {
-				response = webHdfs.mkdirs((String)entry.getValue()[0]);
+			if (opsArgs.getWebHdfsOp().equals(WebHdfsOps.MKDIRS)) {
+				response = webHdfs.mkdirs((String)opsArgs.getArgs()[0]);
 				continue;
 			}		
-			if (entry.getKey().equals(WebHdfsOps.SETOWNER)) {
-				response = webHdfs.setOwner((String)entry.getValue()[0], 
-						(String)entry.getValue()[1], 
-						(String)entry.getValue()[2]);
+			if (opsArgs.getWebHdfsOp().equals(WebHdfsOps.SETOWNER)) {
+				response = webHdfs.setOwner((String)opsArgs.getArgs()[0], 
+						(String)opsArgs.getArgs()[1], 
+						(String)opsArgs.getArgs()[2]); 
 				continue;
 			}					
 		}
 		return response;
-	}
+	}	
+		
 }

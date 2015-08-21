@@ -283,23 +283,4 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 		Assert.assertNotNull(response);
 		Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.OK);
 	}
-	@Test
-	public void validateWorkFlow() throws NoSuchMethodException, SecurityException {
-		final String owner = "spongecell";
-		final String group = "supergroup";
-		final String dataDir = "/data";
-		final String file = dataDir + "/testfile.txt";
-		Object[] ownerArgs = new Object[10];
-		ownerArgs[0] = file;
-		ownerArgs[1] = owner;
-		ownerArgs[1] = group;
-		
-		WebHdfsWorkFlow workFlow = new WebHdfsWorkFlow.Builder() 
-			.addEntry(WebHdfsOps.MKDIRS, dataDir)
-			.addEntry(WebHdfsOps.CREATE, file)
-			.addEntry(WebHdfsOps.SETOWNER, ownerArgs)
-			.build();
-		CloseableHttpResponse response = workFlow.execute();
-		Assert.assertNotNull(response);
-	}
 }
