@@ -16,12 +16,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 
 @Slf4j
 public class WebHdfsWorkFlow {
-	private Map<WebHdfsOps, Object[]> workflow;
 	private Map<String, WebHdfsOpsArgs> workFlow;
 	private WebHdfs webHdfs;
 	
 	private WebHdfsWorkFlow(Builder builder) {
-		this.workflow = builder.workflow;
 		this.workFlow = builder.workFlow;
 		webHdfs = builder.webHdfsBuilder
 			.fileName(builder.fileName)
