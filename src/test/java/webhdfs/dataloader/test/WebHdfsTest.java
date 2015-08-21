@@ -1,11 +1,9 @@
 package webhdfs.dataloader.test;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 
 import javax.annotation.PostConstruct;
 
@@ -20,7 +18,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.util.JSONWrappedObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpStatus;
@@ -29,6 +26,10 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import webhdfs.dataloader.WebHdfs;
+import webhdfs.dataloader.WebHdfsConfiguration;
+import webhdfs.dataloader.exception.WebHdfsException;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -36,12 +37,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import webhdfs.dataloader.WebHdfs;
-import webhdfs.dataloader.WebHdfsConfiguration;
-import webhdfs.dataloader.WebHdfsOps;
-import webhdfs.dataloader.WebHdfsWorkFlow;
-import webhdfs.dataloader.exception.WebHdfsException;
 
 @Slf4j
 @ContextConfiguration(classes = { WebHdfsTest.class, WebHdfs.Builder.class})
