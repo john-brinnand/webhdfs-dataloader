@@ -22,6 +22,7 @@ import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.util.JSONWrappedObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
@@ -182,7 +183,12 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 		WebHdfs webHdfs = webHdfsBuilder.build();
 		Assert.assertNotNull(webHdfs);
 		
-		CloseableHttpResponse response = webHdfs.listStatus(dataDir);
+		CloseableHttpResponse response = null;
+		try {
+			response = webHdfs.listStatus(dataDir);
+		} catch (IllegalArgumentException e) {
+			log.info (e.getCause().toString());
+		}
 		Assert.assertNotNull(response);
 		Assert.assertEquals(response.getStatusLine().getStatusCode(), 200);
 		
@@ -229,5 +235,26 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 			.writeValueAsString(contentSummary));
 			
 		Assert.assertNotNull(contentSummary.get("directoryCount"));
+	}
+
+	@Test
+	public void validateWebHdfsMkdirs() throws URISyntaxException, UnsupportedEncodingException {
+		Assert.assertNotNull(webHdfsBuilder);
+		final String user = "spongecell";
+		final String overwrite = "true";
+		final String dataDir = "/data";
+		
+		WebHdfs webHdfs = webHdfsBuilder
+				.user(user)
+				.overwrite(overwrite)
+				.build();
+		Assert.assertNotNull(webHdfs);
+		
+		CloseableHttpResponse response = webHdfs.listStatus(dataDir);
+		if (response.getStatusLine().getStatusCode() == HttpStatus.NOT_FOUND.value()) {
+			response = webHdfs.mkdirs(dataDir);
+		}
+		Assert.assertNotNull(response);
+		Assert.assertEquals(response.getStatusLine().getStatusCode(), 200);
 	}
 }

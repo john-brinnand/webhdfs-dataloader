@@ -27,7 +27,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.util.Assert;
 
 import webhdfs.dataloader.exception.WebHdfsException;
-
 import static webhdfs.dataloader.WebHdfsParams.*;
 
 
@@ -93,6 +92,10 @@ public class WebHdfs {
 	 */
 	public CloseableHttpResponse create (final AbstractHttpEntity entity) throws WebHdfsException {
 		URI uri = null;
+		// TODO: workflow - check if the base directory exists. If not, create it.
+		// Set the user and the permissions on the directory. Create the file.
+		//************************************************************************
+		
 		try {
 			uri = new URIBuilder()
 				.setScheme(webHdfsConfig.getScheme())
@@ -108,9 +111,8 @@ public class WebHdfs {
 		} catch (URISyntaxException e) {
 			throw new WebHdfsException("ERROR - failure to create URI. Cause is:  ", e);	
 		}
-		
 		HttpPut put = new HttpPut(uri);
-		log.info ("URI is : {} ", put.getURI().toString());
+		log.debug ("URI is : {} ", put.getURI().toString());
 		
 		put.setEntity(entity);
 		
@@ -254,11 +256,12 @@ public class WebHdfs {
 			HttpGet httpMethod = new HttpGet(uri);
 			response = httpClient.execute(httpMethod);
 			Assert.notNull(response);
-			Assert.isTrue(response.getStatusLine().getStatusCode() == 200, 
-					"Response code indicates a failed write");	
-			
-		} catch (URISyntaxException | IOException e) {
-			log.error("ERROR -  ");
+			Assert.isTrue(response.getStatusLine().getStatusCode() == 404 || 
+				response.getStatusLine().getStatusCode() == 200, 
+				"Response code indicates a failed read: " + 
+				response.getStatusLine().getStatusCode());			
+		} catch (URISyntaxException | IOException | IllegalArgumentException e) {
+			log.error("ERROR - LISTSTATUS failed with exception: {} ", e);
 		}
 		log.info("Returning http response. Status code is: {}", 
 			response.getStatusLine().getStatusCode());
@@ -294,19 +297,73 @@ public class WebHdfs {
 		return response;
 	}
 	
+	/**
+	 * Makes a directory
+	 * 
+	 * @param file
+	 * @return
+	 * @throws WebHdfsException
+	 */
+	public CloseableHttpResponse mkdirs (String file) throws WebHdfsException {
+		URI uri = null;
+		try {
+			uri = new URIBuilder()
+				.setScheme(webHdfsConfig.getScheme())
+				.setHost(webHdfsConfig.getHost())
+				.setPort(webHdfsConfig.getPort())
+				.setPath(webHdfsConfig.getWEBHDFS_PREFIX()
+					+  file)
+				.setParameter(PERMISSION, DEFAULT_PERMISSIONS) 
+				.setParameter(OP, MKDIRS)
+				.setParameter(USER, "spongecell")
+				.build();
+		} catch (URISyntaxException e) {
+			throw new WebHdfsException("ERROR - failure to create URI. Cause is:  ", e);	
+		}
+		
+		HttpPut put = new HttpPut(uri);
+		CloseableHttpResponse response = null;
+		try {
+			put.setEntity(new StringEntity(""));
+			log.debug ("URI is : {} ", put.getURI().toString());
+
+			response = httpClient.execute(put);
+			Assert.notNull(response);
+			log.info("Response status code {} ", response.getStatusLine().getStatusCode());
+			Assert.isTrue(response.getStatusLine().getStatusCode() == 200, 
+				"Response code indicates a failed write: " +  
+				response.getStatusLine().getStatusCode());	
+			
+			response.close();
+			
+		} catch (IOException | IllegalArgumentException e) {
+			throw new WebHdfsException("ERROR - failure to make a directory: "
+					+ uri.toString(), e);
+		}	
+		finally {
+			put.completed();
+		}
+		return response;
+	}
+	
 	private CloseableHttpResponse write(CloseableHttpResponse response, 
-			HttpEntityEnclosingRequestBase httpRequest, int responseCode, AbstractHttpEntity entity) {
+		HttpEntityEnclosingRequestBase httpRequest, int responseCode, 
+		AbstractHttpEntity entity) {
 		//*************************************************
 		// Now get the redirect URL and write to HDFS.
 		//*************************************************
-		Header[] header = response.getHeaders("Location");
+		Header[] header = response.getHeaders(LOCATION);
 		Assert.notNull(header);
 		log.debug(header[0].toString());
 		String redirectUrl = header[0].toString().substring("Location:0".length());
 
 		URI uri = null; 
 		try {
-			uri = new URIBuilder(redirectUrl).build();
+			uri = new URIBuilder(redirectUrl)
+				.addParameter(USER, webHdfsConfig.getUser())
+				.addParameter("permission", "755")
+				.build();
+			log.info ("Redirect URI is : {} ", uri); 
 			
 			httpRequest.setURI(uri);
 			httpRequest.setEntity(entity);
@@ -314,9 +371,16 @@ public class WebHdfs {
 			
 			response = httpClient.execute(httpRequest);
 			log.debug("Response status code {} ", response.getStatusLine().getStatusCode());
-			Assert.isTrue(response.getStatusLine().getStatusCode() == responseCode, 
-				"Response code indicates a failed write");
 			
+			try {
+				Assert.isTrue(response.getStatusLine().getStatusCode() == responseCode, 
+					"Response code indicates a failed write: " + 
+					response.getStatusLine().getStatusCode());
+			} catch (IllegalArgumentException e) {
+				// Note: let the error propagate so the client can receive it.
+				//************************************************************
+				log.info("ERROR HttpRequest failure. Exception is: {}", e.toString());
+			}
 		} catch (IOException | URISyntaxException e) {
 			throw new WebHdfsException("ERROR - failure to build URI or write data." + 
 				 " Exception is: ", e);
