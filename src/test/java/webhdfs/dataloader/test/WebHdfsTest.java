@@ -12,6 +12,7 @@ import javax.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.http.Header;
+import org.apache.http.ParseException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URIBuilder;
@@ -28,7 +29,9 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -36,6 +39,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import webhdfs.dataloader.WebHdfs;
 import webhdfs.dataloader.WebHdfsConfiguration;
+import webhdfs.dataloader.WebHdfsOps;
+import webhdfs.dataloader.WebHdfsWorkFlow;
 import webhdfs.dataloader.exception.WebHdfsException;
 
 @Slf4j
@@ -116,7 +121,7 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 	public void validateWebHdfsCreate() throws URISyntaxException, UnsupportedEncodingException {
 		Assert.assertNotNull(webHdfsBuilder);
 		StringEntity entity = new StringEntity("Greetings earthling!\n");
-		String user = "spongecell";
+		String user = "root";
 		String overwrite = "true";
 		
 		WebHdfs webHdfs = webHdfsBuilder
@@ -240,7 +245,7 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 	@Test
 	public void validateWebHdfsMkdirs() throws URISyntaxException, UnsupportedEncodingException {
 		Assert.assertNotNull(webHdfsBuilder);
-		final String user = "spongecell";
+		final String user = "root";
 		final String overwrite = "true";
 		final String dataDir = "/data";
 		
@@ -256,5 +261,45 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 		}
 		Assert.assertNotNull(response);
 		Assert.assertEquals(response.getStatusLine().getStatusCode(), 200);
+	}
+	
+	@Test(dependsOnMethods="validateWebHdfsCreate")
+	public void validateWebHdfsSetOwner() throws URISyntaxException,
+			JsonParseException, JsonMappingException, ParseException, IOException {
+		Assert.assertNotNull(webHdfsBuilder);
+		final String user = "root";
+		final String owner = "spongecell";
+		final String group = "supergroup";
+		final String overwrite = "true";
+		final String file = "/data/testfile.txt";
+		
+		WebHdfs webHdfs = webHdfsBuilder
+				.user(user)
+				.overwrite(overwrite)
+				.build();
+		Assert.assertNotNull(webHdfs);
+		
+		CloseableHttpResponse response = webHdfs.setOwner(file, owner, group);
+		Assert.assertNotNull(response);
+		Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.OK);
+	}
+	@Test
+	public void validateWorkFlow() throws NoSuchMethodException, SecurityException {
+		final String owner = "spongecell";
+		final String group = "supergroup";
+		final String dataDir = "/data";
+		final String file = dataDir + "/testfile.txt";
+		Object[] ownerArgs = new Object[10];
+		ownerArgs[0] = file;
+		ownerArgs[1] = owner;
+		ownerArgs[1] = group;
+		
+		WebHdfsWorkFlow workFlow = new WebHdfsWorkFlow.Builder() 
+			.addEntry(WebHdfsOps.MKDIRS, dataDir)
+			.addEntry(WebHdfsOps.CREATE, file)
+			.addEntry(WebHdfsOps.SETOWNER, ownerArgs)
+			.build();
+		CloseableHttpResponse response = workFlow.execute();
+		Assert.assertNotNull(response);
 	}
 }

@@ -26,6 +26,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.util.Assert;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import webhdfs.dataloader.exception.WebHdfsException;
 import static webhdfs.dataloader.WebHdfsParams.*;
 
@@ -104,9 +108,9 @@ public class WebHdfs {
 				.setPath(webHdfsConfig.getWEBHDFS_PREFIX()
 					+ webHdfsConfig.getPath() + "/" 
 					+ webHdfsConfig.getFileName())
-				.setParameter("overwrite", webHdfsConfig.getOverwrite())
-				.setParameter(USER, webHdfsConfig.getUser())
+				.setParameter(OVERWRITE, webHdfsConfig.getOverwrite())
 				.setParameter(OP, CREATE)
+				.setParameter(USERNAME, webHdfsConfig.getUser())
 				.build();
 		} catch (URISyntaxException e) {
 			throw new WebHdfsException("ERROR - failure to create URI. Cause is:  ", e);	
@@ -152,9 +156,9 @@ public class WebHdfs {
 				.setPath(webHdfsConfig.getWEBHDFS_PREFIX()
 					+ webHdfsConfig.getPath() + "/" 
 					+ webHdfsConfig.getFileName())
-				.setParameter("overwrite", webHdfsConfig.getOverwrite())
-				.setParameter(USER, webHdfsConfig.getUser())
+				.setParameter(USERNAME, webHdfsConfig.getUser())
 				.setParameter(OP, APPEND)	
+				.setParameter(OVERWRITE, webHdfsConfig.getOverwrite())
 				.build();
 			uriMap.put("appendURI", uri);
 			httpPost = new HttpPost(uriMap.get("appendURI"));
@@ -201,9 +205,9 @@ public class WebHdfs {
 				.setPath(webHdfsConfig.getWEBHDFS_PREFIX()
 						+ webHdfsConfig.getPath() + "/" 
 						+ webHdfsConfig.getFileName())
-				.setParameter("overwrite", "false")
-				.setParameter(USER, webHdfsConfig.getUser())
+				.setParameter(USERNAME, webHdfsConfig.getUser())
 				.setParameter(OP, GETFILESTATUS)				
+				.setParameter(OVERWRITE, "false")
 				.build();
 			
 			HttpGet httpMethod = new HttpGet(uri);
@@ -248,9 +252,9 @@ public class WebHdfs {
 				.setHost(webHdfsConfig.getHost())
 				.setPort(webHdfsConfig.getPort())
 				.setPath(fileName)
-				.setParameter("overwrite", "false")
-				.setParameter(USER, webHdfsConfig.getUser())
+				.setParameter(USERNAME, webHdfsConfig.getUser())
 				.setParameter(OP, LISTSTATUS)	
+				.setParameter(OVERWRITE, "false")
 				.build();
 			
 			HttpGet httpMethod = new HttpGet(uri);
@@ -278,9 +282,9 @@ public class WebHdfs {
 			.setPath(webHdfsConfig.getWEBHDFS_PREFIX()
 					+ webHdfsConfig.getPath() + "/" 
 					+ fileName)
-			.setParameter("overwrite", "false")
-			.setParameter(USER, webHdfsConfig.getUser())
+			.setParameter(USERNAME, webHdfsConfig.getUser())
 			.setParameter(OP, GETCONTENTSUMMARY)
+			.setParameter(OVERWRITE, "false")
 			.build();
 
 			HttpGet httpMethod = new HttpGet(uri);
@@ -298,7 +302,9 @@ public class WebHdfs {
 	}
 	
 	/**
-	 * Makes a directory
+	 * Makes one or more directories. Note the file parameter
+	 * is actually a file segment or a set of directory names. 
+	 * For example: "/my/data/directory" 
 	 * 
 	 * @param file
 	 * @return
@@ -311,16 +317,14 @@ public class WebHdfs {
 				.setScheme(webHdfsConfig.getScheme())
 				.setHost(webHdfsConfig.getHost())
 				.setPort(webHdfsConfig.getPort())
-				.setPath(webHdfsConfig.getWEBHDFS_PREFIX()
-					+  file)
-				.setParameter(PERMISSION, DEFAULT_PERMISSIONS) 
+				.setPath(webHdfsConfig.getWEBHDFS_PREFIX() +  file)
+				.setParameter(USERNAME, webHdfsConfig.getUser())
 				.setParameter(OP, MKDIRS)
-				.setParameter(USER, "spongecell")
+				.setParameter(PERMISSION, DEFAULT_PERMISSIONS) 
 				.build();
 		} catch (URISyntaxException e) {
 			throw new WebHdfsException("ERROR - failure to create URI. Cause is:  ", e);	
 		}
-		
 		HttpPut put = new HttpPut(uri);
 		CloseableHttpResponse response = null;
 		try {
@@ -335,7 +339,6 @@ public class WebHdfs {
 				response.getStatusLine().getStatusCode());	
 			
 			response.close();
-			
 		} catch (IOException | IllegalArgumentException e) {
 			throw new WebHdfsException("ERROR - failure to make a directory: "
 					+ uri.toString(), e);
@@ -345,7 +348,64 @@ public class WebHdfs {
 		}
 		return response;
 	}
+	public CloseableHttpResponse setOwner (String file, String owner, String group) throws WebHdfsException {
+		URI uri = null;
+		try {
+			uri = new URIBuilder()
+				.setScheme(webHdfsConfig.getScheme())
+				.setHost(webHdfsConfig.getHost())
+				.setPort(webHdfsConfig.getPort())
+				.setPath(webHdfsConfig.getWEBHDFS_PREFIX() + file)
+				.setParameter(USERNAME, webHdfsConfig.getUser())
+				.setParameter(OP, SETOWNER)
+				.setParameter(OWNER, owner) 
+				.setParameter(GROUP, group) 
+			.build();
+		} catch (URISyntaxException e) {
+			throw new WebHdfsException("ERROR - failure to create URI. Cause is:  ", e);	
+		}
+		HttpPut put = new HttpPut(uri);
+		CloseableHttpResponse response = null;
+		try {
+			put.setEntity(new StringEntity(""));
+			log.debug ("URI is : {} ", put.getURI().toString());
+
+			response = httpClient.execute(put);
+			Assert.notNull(response);
+			log.info("Response status code {} ", response.getStatusLine().getStatusCode());
+			try {
+				Assert.isTrue(response.getStatusLine().getStatusCode() == 200, 
+					"Response code indicates a failed write: " +  
+					response.getStatusLine().getStatusCode());
+			} catch (IllegalArgumentException e) {
+				ObjectNode contentSummary = new ObjectMapper().readValue(
+					EntityUtils.toString(response.getEntity()), 
+					new TypeReference<ObjectNode>() {
+				});
+				log.info("ERROR IllegalArgument status is: {} ", new ObjectMapper()
+						.writerWithDefaultPrettyPrinter()
+						.writeValueAsString(contentSummary));
+			}	
+			response.close();
+		} catch (IOException e) {
+			throw new WebHdfsException("ERROR - failure to make a directory: "
+					+ uri.toString(), e);
+		}	
+		finally {
+			put.completed();
+		}
+		return response;
+	}	
 	
+	/**
+	 * Write utility.
+	 * 
+	 * @param response
+	 * @param httpRequest
+	 * @param responseCode
+	 * @param entity
+	 * @return
+	 */
 	private CloseableHttpResponse write(CloseableHttpResponse response, 
 		HttpEntityEnclosingRequestBase httpRequest, int responseCode, 
 		AbstractHttpEntity entity) {

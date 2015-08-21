@@ -13,7 +13,7 @@ public class WebHdfsConfiguration {
 	public int port = 50070;
 	public String path = "/data";
 	public String host = "dockerhadoop";
-	public String user = "spongecell";
+	public String user = "root";
 	public String overwrite = "true";
 	public String WEBHDFS_PREFIX = "/webhdfs/v1";
 	
