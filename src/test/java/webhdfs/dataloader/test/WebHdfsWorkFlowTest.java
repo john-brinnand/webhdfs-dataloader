@@ -2,7 +2,6 @@ package webhdfs.dataloader.test;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.util.LinkedList;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.entity.StringEntity;
@@ -16,7 +15,6 @@ import org.testng.annotations.Test;
 
 import webhdfs.dataloader.WebHdfsConfiguration;
 import webhdfs.dataloader.WebHdfsOps;
-import webhdfs.dataloader.WebHdfsOpsArgs;
 import webhdfs.dataloader.WebHdfsWorkFlow;
 
 @ContextConfiguration(classes = { WebHdfsWorkFlowTest.class, WebHdfsWorkFlow.Builder.class})
@@ -24,73 +22,6 @@ import webhdfs.dataloader.WebHdfsWorkFlow;
 public class WebHdfsWorkFlowTest extends AbstractTestNGSpringContextTests{
 	@Autowired WebHdfsWorkFlow.Builder webHdfsWorkFlowBuilder;
 	@Autowired WebHdfsConfiguration webHdfsConfig;
-
-	@Test
-	public void validateCreateWorkFlow() throws NoSuchMethodException,
-			SecurityException, UnsupportedEncodingException, URISyntaxException {
-		Assert.assertNotNull(webHdfsWorkFlowBuilder);
-		final String owner = "spongecell";
-		final String group = "supergroup";
-		final String dataDir = "/data";
-		final String file = dataDir + "/testfile.txt";
-		StringEntity createEntity = new StringEntity("Greetings earthling!\n");
-		LinkedList<Object> args = new LinkedList<Object>();
-		args.add(0, dataDir);
-		args.add(1, createEntity);
-		args.add(2, file);
-		args.add(3, owner);
-		args.add(4, group);
-		args.add(5, dataDir);
-		args.add(6, owner);
-		args.add(7, group);
-		
-		WebHdfsOpsArgs mkdirOpArgs = new WebHdfsOpsArgs(WebHdfsOps.MKDIRS, args.subList(0,1).toArray());
-		WebHdfsOpsArgs createOpArgs = new WebHdfsOpsArgs(WebHdfsOps.CREATE, args.subList(1,2).toArray());
-		WebHdfsOpsArgs setFileOwnerOpArgs = new WebHdfsOpsArgs(WebHdfsOps.SETOWNER, args.subList(2, 5).toArray());
-		WebHdfsOpsArgs setDirOwnerOpArgs = new WebHdfsOpsArgs(WebHdfsOps.SETOWNER, args.subList(5, args.size()).toArray());
-		
-		WebHdfsWorkFlow workFlow = webHdfsWorkFlowBuilder
-			.addEntry("CreateBaseDir", mkdirOpArgs)
-			.addEntry("SetBaseDirOwner", setDirOwnerOpArgs)
-			.addEntry("CreateAndWriteToFile", createOpArgs)
-			.addEntry("SetFileOwner", setFileOwnerOpArgs)
-			.build();
-		CloseableHttpResponse response = workFlow.execute(); 
-		Assert.assertNotNull(response);
-		Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.OK.value());
-	}
-	
-	@Test
-	public void validateWorkFlowConfiguration() throws NoSuchMethodException,
-			SecurityException, UnsupportedEncodingException, URISyntaxException {
-		Assert.assertNotNull(webHdfsWorkFlowBuilder);
-		StringEntity entity = new StringEntity("Greetings earthling!\n");
-		LinkedList<Object> args = new LinkedList<Object>();
-		args.add(0, webHdfsConfig.getBaseDir());
-		args.add(1, entity);
-		args.add(2, webHdfsConfig.getBaseDir() + 
-			"/" + webHdfsConfig.getFileName());
-		args.add(3, webHdfsConfig.getOwner());
-		args.add(4, webHdfsConfig.getGroup());
-		args.add(5, webHdfsConfig.getBaseDir());
-		args.add(6, webHdfsConfig.getOwner());
-		args.add(7, webHdfsConfig.getGroup());
-		
-		WebHdfsOpsArgs mkdirOpArgs = new WebHdfsOpsArgs(WebHdfsOps.MKDIRS, args.subList(0,1).toArray());
-		WebHdfsOpsArgs createOpArgs = new WebHdfsOpsArgs(WebHdfsOps.CREATE, args.subList(1,2).toArray());
-		WebHdfsOpsArgs setFileOwnerOpArgs = new WebHdfsOpsArgs(WebHdfsOps.SETOWNER, args.subList(2, 5).toArray());
-		WebHdfsOpsArgs setDirOwnerOpArgs = new WebHdfsOpsArgs(WebHdfsOps.SETOWNER, args.subList(5, args.size()).toArray());
-		
-		WebHdfsWorkFlow workFlow = webHdfsWorkFlowBuilder
-			.addEntry("CreateBaseDir", mkdirOpArgs)
-			.addEntry("SetBaseDirOwner", setDirOwnerOpArgs)
-			.addEntry("CreateAndWriteToFile", createOpArgs)
-			.addEntry("SetFileOwner", setFileOwnerOpArgs)
-			.build();
-		CloseableHttpResponse response = workFlow.execute(); 
-		Assert.assertNotNull(response);
-		Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.OK.value());
-	}	
 
 	@Test
 	public void validateWorkFlowOpsArgsConfiguration() throws NoSuchMethodException, 
@@ -105,7 +36,7 @@ public class WebHdfsWorkFlowTest extends AbstractTestNGSpringContextTests{
 				WebHdfsOps.MKDIRS, 
 				HttpStatus.OK, 
 				webHdfsConfig.getBaseDir())
-			.addEntry("SetBaseDirOwner", 
+			.addEntry("SetOwnerBaseDir", 
 				WebHdfsOps.SETOWNER, 
 				HttpStatus.OK, 
 				webHdfsConfig.getBaseDir(), 
@@ -115,7 +46,7 @@ public class WebHdfsWorkFlowTest extends AbstractTestNGSpringContextTests{
 				WebHdfsOps.CREATE, 
 				HttpStatus.CREATED, 
 				entity)
-			.addEntry("SetFileOwner", WebHdfsOps.SETOWNER, 
+			.addEntry("SetOwnerFile", WebHdfsOps.SETOWNER, 
 				HttpStatus.OK, 
 				fileName,
 				webHdfsConfig.getOwner(), 

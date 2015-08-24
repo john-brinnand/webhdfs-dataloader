@@ -46,16 +46,6 @@ public class WebHdfsWorkFlow {
 			workFlow = new LinkedHashMap<String, WebHdfsOpsArgs>();
 		}
 		
-		public Builder addEntry(WebHdfsOps op, Object...args) {
-			log.info("WorkFlow entry is: {} ", op);
-			workflow.put(op, args);
-			return this;
-		}
-		public Builder addEntry(String step, WebHdfsOpsArgs opsArgs) {
-			this.workFlow.put(step, opsArgs);
-			return this;
-		}
-
 		public Builder addEntry(String step, WebHdfsOps ops, 
 				HttpStatus httpStatus, Object...args) {
 			WebHdfsOpsArgs opsArgs  = new WebHdfsOpsArgs(ops, httpStatus, args);
