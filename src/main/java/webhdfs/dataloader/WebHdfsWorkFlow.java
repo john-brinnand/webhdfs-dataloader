@@ -14,6 +14,7 @@ import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.StringEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.http.HttpStatus;
 
 @Slf4j
 @Getter
@@ -50,6 +51,13 @@ public class WebHdfsWorkFlow {
 			return this;
 		}
 		public Builder addEntry(String step, WebHdfsOpsArgs opsArgs) {
+			this.workFlow.put(step, opsArgs);
+			return this;
+		}
+
+		public Builder addEntry(String step, WebHdfsOps ops, 
+				HttpStatus httpStatus, Object...args) {
+			WebHdfsOpsArgs opsArgs  = new WebHdfsOpsArgs(ops, httpStatus, args);
 			this.workFlow.put(step, opsArgs);
 			return this;
 		}

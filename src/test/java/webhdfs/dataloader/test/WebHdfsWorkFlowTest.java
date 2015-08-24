@@ -59,6 +59,7 @@ public class WebHdfsWorkFlowTest extends AbstractTestNGSpringContextTests{
 		Assert.assertNotNull(response);
 		Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.OK.value());
 	}
+	
 	@Test
 	public void validateWorkFlowConfiguration() throws NoSuchMethodException,
 			SecurityException, UnsupportedEncodingException, URISyntaxException {
@@ -90,4 +91,38 @@ public class WebHdfsWorkFlowTest extends AbstractTestNGSpringContextTests{
 		Assert.assertNotNull(response);
 		Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.OK.value());
 	}	
+
+	@Test
+	public void validateWorkFlowOpsArgsConfiguration() throws NoSuchMethodException, 
+		SecurityException, UnsupportedEncodingException, URISyntaxException {
+		Assert.assertNotNull(webHdfsWorkFlowBuilder);
+		
+		StringEntity entity = new StringEntity("Greetings earthling!\n");
+		String fileName = webHdfsConfig.getBaseDir() + "/" + webHdfsConfig.getFileName();
+		
+		WebHdfsWorkFlow workFlow = webHdfsWorkFlowBuilder
+			.addEntry("CreateBaseDir", 
+				WebHdfsOps.MKDIRS, 
+				HttpStatus.OK, 
+				webHdfsConfig.getBaseDir())
+			.addEntry("SetBaseDirOwner", 
+				WebHdfsOps.SETOWNER, 
+				HttpStatus.OK, 
+				webHdfsConfig.getBaseDir(), 
+				webHdfsConfig.getOwner(), 
+				webHdfsConfig.getGroup())
+			.addEntry("CreateAndWriteToFile", 
+				WebHdfsOps.CREATE, 
+				HttpStatus.CREATED, 
+				entity)
+			.addEntry("SetFileOwner", WebHdfsOps.SETOWNER, 
+				HttpStatus.OK, 
+				fileName,
+				webHdfsConfig.getOwner(), 
+				webHdfsConfig.getGroup())
+			.build();
+		CloseableHttpResponse response = workFlow.execute(); 
+		Assert.assertNotNull(response);
+		Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.OK.value());
+	}		
 }
