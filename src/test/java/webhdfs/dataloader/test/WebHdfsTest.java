@@ -28,6 +28,7 @@ import org.testng.annotations.Test;
 
 import webhdfs.dataloader.WebHdfs;
 import webhdfs.dataloader.WebHdfsConfiguration;
+import webhdfs.dataloader.WebHdfsParams;
 import webhdfs.dataloader.exception.WebHdfsException;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -63,8 +64,10 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 			.setPath(webHdfsConfig.getWEBHDFS_PREFIX()
 				+ webHdfsConfig.getPath() + "/" 
 				+ webHdfsConfig.getFileName())
+			.setParameter(OWNER, webHdfsConfig.getSuperUser())
 			.setParameter(OVERWRITE, webHdfsConfig.getOverwrite())
 			.setParameter(USER, webHdfsConfig.getUser())
+			.setParameter(OP, WebHdfsParams.CREATE)
 			.build();
 		
 		greetingEntity = new StringEntity("Greetings earthling!\n");
@@ -93,7 +96,7 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 			response = httpClient.execute(put);
 			Assert.assertNotNull(response);
 			log.info("Response status code {} ", response.getStatusLine().getStatusCode());
-			Assert.assertEquals(307, response.getStatusLine().getStatusCode());
+			Assert.assertEquals(response.getStatusLine().getStatusCode(), 307);
 		} catch (IOException e) {
 			throw new WebHdfsException("ERROR - failure to get redirect URL: "
 					+ uri.toString(), e);
@@ -107,14 +110,17 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 		String redirectUrl = header[0].toString().substring("Location:0".length());
 		Assert.assertNotNull(redirectUrl);
 
-		URI uri = new URIBuilder(redirectUrl).build();
+		uri = new URIBuilder(redirectUrl)
+			.addParameter(USER, webHdfsConfig.getUser())
+			.addParameter("permission", "755")
+			.build();
 
 		HttpPut httpPut = new HttpPut(uri);
 		httpPut.setEntity(entity);
 
 		try {
 			response = httpClient.execute(httpPut);
-			Assert.assertEquals(201, response.getStatusLine().getStatusCode());
+			Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.CREATED.value());
 			httpClient.close();
 			response.close();
 		} catch (IOException e) {
