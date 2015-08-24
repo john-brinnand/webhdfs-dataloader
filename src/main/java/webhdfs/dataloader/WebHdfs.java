@@ -98,10 +98,6 @@ public class WebHdfs {
 	 */
 	public CloseableHttpResponse create (final AbstractHttpEntity entity) throws WebHdfsException {
 		URI uri = null;
-		// TODO: workflow - check if the base directory exists. If not, create it.
-		// Set the user and the permissions on the directory. Create the file.
-		//************************************************************************
-		
 		try {
 			uri = new URIBuilder()
 				.setScheme(webHdfsConfig.getScheme())
