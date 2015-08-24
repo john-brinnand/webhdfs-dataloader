@@ -19,7 +19,14 @@ public class WebHdfsParams {
 	public final static String OVERWRITE = "overwrite";
 	public final static String LOCATION = "location";
 	public final static String PERMISSION = "permission";
+	public final static String PERMISSIONS = "permissions";
 	public final static String DEFAULT_PERMISSIONS = "755";
-	
+	public final static String TYPE = "type";
+	public final static String FILE = "FILE";
+	public final static String FILE_STATUSES = "FileStatuses";
+	public final static String FILE_STATUS = "FileStatus";
+	public final static String CONTENT_SUMMARY = "ContentSummary";
+	public final static String DIRECTORY_COUNT = "directoryCount";
+	public final static String REDIRECT_URI_LOCATION = LOCATION + ":" + "0";
 	
 }

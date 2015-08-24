@@ -15,6 +15,7 @@ public class WebHdfsConfiguration {
 	public String baseDir = "/data";
 	public String host = "dockerhadoop";
 	public String user = "root";
+	public String superUser = "root";
 	public String owner = "spongecell";
 	public String group = "supergroup";
 	public String overwrite = "true";

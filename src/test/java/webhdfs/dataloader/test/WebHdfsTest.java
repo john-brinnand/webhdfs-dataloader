@@ -38,6 +38,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import static webhdfs.dataloader.WebHdfsParams.*;
+
+/**
+ * @author jbrinnand
+ */
 @Slf4j
 @ContextConfiguration(classes = { WebHdfsTest.class, WebHdfs.Builder.class})
 @EnableConfigurationProperties ({ WebHdfsConfiguration.class })
@@ -45,9 +50,12 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 	@Autowired WebHdfsConfiguration webHdfsConfig;
 	@Autowired WebHdfs.Builder webHdfsBuilder;
 	private URI uri;
+	private StringEntity greetingEntity = null; 
+	private StringEntity leaderEntity =  null;
+	private StringEntity questionEntity = null; 
 
 	@PostConstruct
-	public void postConstruct() throws URISyntaxException {
+	public void postConstruct() throws URISyntaxException, UnsupportedEncodingException {
 		uri = new URIBuilder()
 			.setScheme(webHdfsConfig.getScheme())
 			.setHost(webHdfsConfig.getHost())
@@ -55,9 +63,13 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 			.setPath(webHdfsConfig.getWEBHDFS_PREFIX()
 				+ webHdfsConfig.getPath() + "/" 
 				+ webHdfsConfig.getFileName())
-			.setParameter("overwrite", webHdfsConfig.getOverwrite())
-			.setParameter("user", webHdfsConfig.getUser())
+			.setParameter(OVERWRITE, webHdfsConfig.getOverwrite())
+			.setParameter(USER, webHdfsConfig.getUser())
 			.build();
+		
+		greetingEntity = new StringEntity("Greetings earthling!\n");
+		questionEntity = new StringEntity("What place is this?\n");
+		leaderEntity = new StringEntity("Take me to your leader!\n");
 	}
 
 	@Test
@@ -112,20 +124,19 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 		log.info("Response status code {} ", response.getStatusLine().getStatusCode());
 	}
 	
-	@Test
+	@Test(dependsOnMethods="validateWebHdfsMkdirs")
 	public void validateWebHdfsCreate() throws URISyntaxException, UnsupportedEncodingException {
 		Assert.assertNotNull(webHdfsBuilder);
-		StringEntity entity = new StringEntity("Greetings earthling!\n");
-		String user = "root";
-		String overwrite = "true";
+		final String overwrite = webHdfsConfig.getOverwrite();
+		final String superUser =  webHdfsConfig.getSuperUser();
 		
 		WebHdfs webHdfs = webHdfsBuilder
-				.user(user)
+				.user(superUser)
 				.overwrite(overwrite)
 				.build();
 		Assert.assertNotNull(webHdfs);
 		
-		CloseableHttpResponse response = webHdfs.create(entity);
+		CloseableHttpResponse response = webHdfs.create(greetingEntity);
 		Assert.assertNotNull(response);
 		Assert.assertEquals(response.getStatusLine().getStatusCode(), 201);
 	}
@@ -134,11 +145,10 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 	public void validateWebHdfsAppend() throws UnsupportedEncodingException,
 			URISyntaxException {
 		Assert.assertNotNull(webHdfsBuilder);
-		StringEntity leaderEntity = new StringEntity("Take me to your leader!\n");
-		StringEntity questionEntity = new StringEntity("What place is this?\n");
+		final String superUser =  webHdfsConfig.getSuperUser();
 		
 		WebHdfs webHdfs = webHdfsBuilder
-				.user("spongecell")
+				.user(superUser)
 				.build();
 		Assert.assertNotNull(webHdfs);
 		
@@ -154,9 +164,9 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 	@Test(dependsOnMethods="validateWebHdfsCreate")
 	public void validateWebHdfsFileStatus() throws URISyntaxException, IOException {
 		Assert.assertNotNull(webHdfsBuilder);
-		
-		WebHdfs webHdfs = webHdfsBuilder.build();
+		final WebHdfs webHdfs = webHdfsBuilder.build();
 		Assert.assertNotNull(webHdfs);
+		final String superUser =  webHdfsConfig.getSuperUser();
 		
 		CloseableHttpResponse response = webHdfs.getFileStatus(webHdfsConfig.getFileName());
 		Assert.assertNotNull(response);
@@ -170,18 +180,22 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 			.writerWithDefaultPrettyPrinter()
 			.writeValueAsString(fileStatus));
 		
-		Assert.assertEquals(fileStatus.get("FileStatus").get("type").asText(), "FILE");
-		Assert.assertEquals(fileStatus.get("FileStatus").get("permission").asText(), "755");
-		Assert.assertEquals(fileStatus.get("FileStatus").get("owner").asText(), "dr.who");
+		Assert.assertEquals(fileStatus.get("FileStatus").get(TYPE).asText(),
+				FILE);
+		Assert.assertEquals(fileStatus.get("FileStatus")
+			.get(PERMISSION).asText(), DEFAULT_PERMISSIONS);
+		Assert.assertEquals(fileStatus.get("FileStatus").get(OWNER).asText(), superUser);
 	}	
 	
 	@Test(dependsOnMethods="validateWebHdfsCreate")
 	public void validateWebHdfsListStatus() throws URISyntaxException, IOException {
 		Assert.assertNotNull(webHdfsBuilder);
-		String dataDir = "/data";
+		String dataDir = webHdfsConfig.getBaseDir(); 
+		final String superUser =  webHdfsConfig.getSuperUser();
 		
 		WebHdfs webHdfs = webHdfsBuilder.build();
 		Assert.assertNotNull(webHdfs);
+		
 		
 		CloseableHttpResponse response = null;
 		try {
@@ -201,16 +215,16 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 			.writeValueAsString(dirStatus));
 		
 		ArrayNode fileStatus  = new ObjectMapper().readValue(dirStatus
-			.get("FileStatuses")
-			.get("FileStatus").toString(),
+			.get(FILE_STATUSES)
+			.get(FILE_STATUS).toString(),
 			new TypeReference<ArrayNode>() { 
 		});
 		
 		for (int i = 0; i < fileStatus.size(); i++) {
 			JsonNode fileStatusNode = fileStatus.get(i);
-			Assert.assertEquals(fileStatusNode.get("type").asText(), "FILE");
-			Assert.assertEquals(fileStatusNode.get("permission").asText(), "755");
-			Assert.assertEquals(fileStatusNode.get("owner").asText(), "dr.who");	
+			Assert.assertEquals(fileStatusNode.get(TYPE).asText(), FILE);
+			Assert.assertEquals(fileStatusNode.get(PERMISSION).asText(), DEFAULT_PERMISSIONS);
+			Assert.assertEquals(fileStatusNode.get(OWNER).asText(), superUser);	
 		}
 	}
 	
@@ -227,22 +241,22 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 		
 		//****************************************
 		ObjectNode contentSummary = new ObjectMapper().readValue(
-				EntityUtils.toString(response.getEntity()), 
-				new TypeReference<ObjectNode>() {
-			});
+			EntityUtils.toString(response.getEntity()), 
+			new TypeReference<ObjectNode>() {
+		});
 		log.info("File status is: {} ", new ObjectMapper()
 			.writerWithDefaultPrettyPrinter()
 			.writeValueAsString(contentSummary));
 			
-		Assert.assertNotNull(contentSummary.get("directoryCount"));
+		Assert.assertNotNull(contentSummary.get(CONTENT_SUMMARY).get(DIRECTORY_COUNT));
 	}
 
 	@Test
 	public void validateWebHdfsMkdirs() throws URISyntaxException, UnsupportedEncodingException {
 		Assert.assertNotNull(webHdfsBuilder);
-		final String user = "root";
-		final String overwrite = "true";
-		final String dataDir = "/data";
+		final String user =  webHdfsConfig.getSuperUser();
+		final String overwrite = webHdfsConfig.getOverwrite();
+		final String dataDir = webHdfsConfig.getBaseDir();
 		
 		WebHdfs webHdfs = webHdfsBuilder
 				.user(user)
@@ -262,11 +276,11 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 	public void validateWebHdfsSetOwner() throws URISyntaxException,
 			JsonParseException, JsonMappingException, ParseException, IOException {
 		Assert.assertNotNull(webHdfsBuilder);
-		final String user = "root";
-		final String owner = "spongecell";
-		final String group = "supergroup";
-		final String overwrite = "true";
-		final String file = "/data/testfile.txt";
+		final String user =  webHdfsConfig.getSuperUser();
+		final String owner = webHdfsConfig.getOwner(); 
+		final String group = webHdfsConfig.getGroup(); 
+		final String overwrite = webHdfsConfig.getOverwrite();
+		final String file = webHdfsConfig.getBaseDir() + "/" + webHdfsConfig.getFileName(); 
 		
 		WebHdfs webHdfs = webHdfsBuilder
 				.user(user)
@@ -276,6 +290,6 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 		
 		CloseableHttpResponse response = webHdfs.setOwner(file, owner, group);
 		Assert.assertNotNull(response);
-		Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.OK);
+		Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpStatus.OK.value());
 	}
 }

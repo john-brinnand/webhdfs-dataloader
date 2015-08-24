@@ -75,14 +75,14 @@ public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpring
 			.valueTranslatorType(String.class)
 			.build();
 		try {
-			for (int i = 0; i < 1; i++) {
+			for (int i = 0; i < 500; i++) {
 				handler.write(topic, key, data);
 			}
 			handler.writerClose();
 		} catch (InvalidTranslatorException e) {
 			log.info ("ERROR - failed to write: {} ", e);
 		}
-		Thread.sleep(65000);
+		Thread.sleep(25000);
 		EventHandlerConsumer<String, String> eventConsumer;
 		do {
 			eventConsumer = scheduler.getEventConsumer();
