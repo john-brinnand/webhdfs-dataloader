@@ -15,6 +15,7 @@ import org.apache.http.entity.StringEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.Assert;
 
 @Slf4j
 @Getter
@@ -83,9 +84,17 @@ public class WebHdfsWorkFlow {
 	}
 	public CloseableHttpResponse execute() throws URISyntaxException {
 		CloseableHttpResponse response = null;
+		WebHdfsOpsArgs opsArgs =  null;
 		Set<Entry<String, WebHdfsOpsArgs>>entries = workFlow.entrySet();
+		
 		for (Entry<String, WebHdfsOpsArgs>entry : entries) {
-			WebHdfsOpsArgs opsArgs = entry.getValue();
+			if (opsArgs != null) {
+				Assert.isTrue(response.getStatusLine().getStatusCode() == 
+					opsArgs.getHttpStatus().value(), 
+					"Response code indicates a failed operation: " + 
+					response.getStatusLine().getStatusCode());	
+			}
+			opsArgs = entry.getValue();
 			log.info("Executing step : {} ", entry.getKey());
 			if (opsArgs.getWebHdfsOp().equals(WebHdfsOps.LISTSTATUS)) {
 				response = webHdfs.listStatus((String)opsArgs.getArgs()[0]);

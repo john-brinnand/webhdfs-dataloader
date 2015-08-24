@@ -15,6 +15,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.entity.StringEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.Assert;
 
 import webhdfs.dataloader.WebHdfs;
@@ -43,32 +44,29 @@ public class EventHandlerConsumer<K, V> implements MessageConsumer<K, V>  {
 	
 	@PostConstruct
 	public void init() {
-		LinkedList<Object> args = new LinkedList<Object>();
-		args.add(0, webHdfsConfig.getBaseDir());
-		args.add(1, null);
-		args.add(2, webHdfsConfig.getBaseDir() + 
-			"/" + webHdfsConfig.getFileName());
-		args.add(3, webHdfsConfig.getOwner());
-		args.add(4, webHdfsConfig.getGroup());
-		args.add(5, webHdfsConfig.getBaseDir());
-		args.add(6, webHdfsConfig.getOwner());
-		args.add(7, webHdfsConfig.getGroup());
-		
-		WebHdfsOpsArgs mkdirOpArgs = new WebHdfsOpsArgs(
-			WebHdfsOps.MKDIRS, args.subList(0, 1).toArray());
-		WebHdfsOpsArgs createOpArgs = new WebHdfsOpsArgs(
-			WebHdfsOps.CREATE, args.subList(1, 2).toArray());
-		WebHdfsOpsArgs setFileOwnerOpArgs = new WebHdfsOpsArgs(
-			WebHdfsOps.SETOWNER, args.subList(2, 5).toArray());
-		WebHdfsOpsArgs setDirOwnerOpArgs = new WebHdfsOpsArgs(
-			WebHdfsOps.SETOWNER, args.subList(5, args.size()).toArray());
+		String fileName = webHdfsConfig.getBaseDir() + "/" + webHdfsConfig.getFileName();
 		
 		workFlow = webHdfsWorkFlowBuilder
-			.addEntry("CreateBaseDir", mkdirOpArgs)
-			.addEntry("SetBaseDirOwner", setDirOwnerOpArgs)
-			.addEntry("CreateAndWriteToFile", createOpArgs)
-			.addEntry("SetFileOwner", setFileOwnerOpArgs)
-			.build();
+			.addEntry("CreateBaseDir", 
+				WebHdfsOps.MKDIRS, 
+				HttpStatus.OK, 
+				webHdfsConfig.getBaseDir())
+			.addEntry("SetBaseDirOwner", 
+				WebHdfsOps.SETOWNER, 
+				HttpStatus.OK, 
+				webHdfsConfig.getBaseDir(), 
+				webHdfsConfig.getOwner(), 
+				webHdfsConfig.getGroup())
+			.addEntry("CreateAndWriteToFile", 
+				WebHdfsOps.CREATE, 
+				HttpStatus.CREATED, 
+				"")
+			.addEntry("SetFileOwner", WebHdfsOps.SETOWNER, 
+				HttpStatus.OK, 
+				fileName,
+				webHdfsConfig.getOwner(), 
+				webHdfsConfig.getGroup())
+			.build();	
 	}
 
 	@Override
@@ -92,7 +90,10 @@ public class EventHandlerConsumer<K, V> implements MessageConsumer<K, V>  {
 				ArrayList<StringEntity> entityList = new ArrayList<StringEntity>();
 				entityList.add(entity);
 			
-				WebHdfsOpsArgs createOpArgs = new WebHdfsOpsArgs(WebHdfsOps.CREATE, entityList.toArray());	
+				WebHdfsOpsArgs createOpArgs = new WebHdfsOpsArgs(
+					WebHdfsOps.CREATE, 
+					HttpStatus.CREATED, 
+					entityList.toArray());	
 				workFlow.getWorkFlow().put("CreateAndWriteToFile", createOpArgs);
 			
 				response = workFlow.execute();
