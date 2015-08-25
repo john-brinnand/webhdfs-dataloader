@@ -112,7 +112,7 @@ public class WebHdfsTest extends AbstractTestNGSpringContextTests{
 
 		uri = new URIBuilder(redirectUrl)
 			.addParameter(USER, webHdfsConfig.getUser())
-			.addParameter("permission", "755")
+			.addParameter(PERMISSION, DEFAULT_PERMISSIONS)
 			.build();
 
 		HttpPut httpPut = new HttpPut(uri);
