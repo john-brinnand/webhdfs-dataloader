@@ -1,2 +1,2 @@
 # webhdfs-dataloader
-A data loader that reads data from Kafka and writes that data to HDFS.
+A data loader that extracts data from Kafka and loads it into HDFS using WebHdfs.  
