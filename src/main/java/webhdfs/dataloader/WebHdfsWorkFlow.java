@@ -35,14 +35,12 @@ public class WebHdfsWorkFlow {
 	@EnableConfigurationProperties ({ WebHdfs.Builder.class })
 	public static class Builder {
 		@Autowired WebHdfs.Builder webHdfsBuilder;
-		private Map<WebHdfsOps, Object[]> workflow;
 		private String fileName;
 		private String user;
 		private String overwrite;
 		private Map<String, WebHdfsOpsArgs> workFlow;
 
 		public Builder() {
-			workflow = new LinkedHashMap<WebHdfsOps, Object[]>();
 			workFlow = new LinkedHashMap<String, WebHdfsOpsArgs>();
 		}
 		
