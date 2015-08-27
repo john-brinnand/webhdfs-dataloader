@@ -3,7 +3,6 @@ package webhdfs.dataloader.consumer;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 import javax.annotation.PostConstruct;
 
