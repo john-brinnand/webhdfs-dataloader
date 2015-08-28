@@ -43,10 +43,13 @@ public class EventHandlerJobScheduler {
 	 */
 	public EventHandlerConsumer<String, String> loadData()
 			throws TimeoutException, InterruptedException, ExecutionException {
+		// TODO - set the properties from the environment.
 		eventHandlerConsumer.groupId("testGroup")
-				.topic("audience-server-bluekai").partition(0)
+				.topic("audience-server-bluekai")
+				.partition(0)
 				.keyTranslatorType(String.class)
-				.valueTranslatorType(String.class).build();
+				.valueTranslatorType(String.class)
+				.build();
 		Integer initialDelay = eventHandlerJobSchedulerConfig.getInitialDelay();
 		Integer period = eventHandlerJobSchedulerConfig.getPeriod();
 		TimeUnit timeUnit = eventHandlerJobSchedulerConfig.getTimeUnit();
@@ -59,8 +62,8 @@ public class EventHandlerJobScheduler {
 				eventHandlerConsumer.readAll(eventHandlerConsumer.getTopic(),
 						eventConsumer);
 				endTime = System.currentTimeMillis();
-				log.info("------------------  Load Completed  in {} ", 
-					endTime - startTime, "  ------------------------");
+				log.info("------------------  Load Completed  in {} {} ", 
+					endTime - startTime, TimeUnit.MILLISECONDS.toString().toLowerCase());
 			}
 		}, initialDelay, period, timeUnit);
 

@@ -42,7 +42,7 @@ import webhdfs.dataloader.application.WebHdfsDataLoaderConfiguration;
 @ContextConfiguration(classes = { webhdfs.dataloader.application.WebHdfsDataLoaderApplication.class })
 public class WebHdfsDataLoaderResourceTest extends AbstractTestNGSpringContextTests {
 	private String data;
-	private final static String BASE_URI = "/v1/eventHandler";
+	private final static String BASE_URI = "/v1/webhdfsDataloader";
 	private final static String PING = "ping";
 	@Autowired WebApplicationContext wac;
 	@Autowired WebHdfsDataLoaderConfiguration config;

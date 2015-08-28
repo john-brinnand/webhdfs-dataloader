@@ -27,7 +27,7 @@ import com.fasterxml.jackson.core.util.ByteArrayBuilder;
 
 @Slf4j
 @RestController
-@RequestMapping("/v1/eventHandler")
+@RequestMapping("/v1/webhdfsDataloader")
 public class WebHdfsDataLoaderResource {
 	@Autowired private EventHandler<String, RequestEvent> eventHandler; 
 	private @Autowired EventHandlerJobScheduler scheduler;
@@ -58,7 +58,7 @@ public class WebHdfsDataLoaderResource {
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?> postRequestParamEndpoint(HttpServletRequest request,
 			@RequestParam(value = "id") String id) throws Exception {
-		String content = "Greetings " + id  + " from the postRequestParamEndpoint"; 
+		String content = "Greetings " + id  + " from the postRequestParamEndpoint.\n"; 
 		log.info("Returning : {} ", content);
 		ResponseEntity<String> response = new ResponseEntity<String>(content, HttpStatus.OK);
 		return response; 
@@ -67,7 +67,7 @@ public class WebHdfsDataLoaderResource {
 	@RequestMapping(method = RequestMethod.PUT)
 	public ResponseEntity<?> eventHandlerAdmin(HttpServletRequest request,
 		 @RequestParam String op) throws Exception {
-		String content = "Greetings eventHandlerAdministrator."; 
+		String content = "Greetings eventHandlerAdministrator.\n"; 
 		if (op.equals("start")) {
 			// TODO add Future here.
 		}
@@ -79,7 +79,7 @@ public class WebHdfsDataLoaderResource {
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<?> getRequestParamEndpoint(HttpServletRequest request,
 			@RequestParam(value = "id") String id) throws Exception {
-		String content =  id + ":" + "testValue";
+		String content =  id + ":" + "testValue\n";
 		log.info("Returning {} for id {}", content, id);
 		ResponseEntity<String> response = new ResponseEntity<String>(content, HttpStatus.OK);
 		return response; 
@@ -88,7 +88,7 @@ public class WebHdfsDataLoaderResource {
 	@RequestMapping(method = RequestMethod.DELETE)
 	public ResponseEntity<?> deleteRequestParamEndpoint(HttpServletRequest request,
 			@RequestParam(value = "id") String id) throws Exception {
-		String content =  "Deleted " + id + ":" + "testValue";
+		String content =  "Deleted " + id + ":" + "testValue\n";
 		log.info("Returning {} for id {}", content, id);
 		ResponseEntity<String> response = new ResponseEntity<String>(content, HttpStatus.OK);
 		return response; 
