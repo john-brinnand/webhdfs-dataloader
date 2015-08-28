@@ -82,7 +82,7 @@ public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpring
 		} catch (InvalidTranslatorException e) {
 			log.info ("ERROR - failed to write: {} ", e);
 		}
-		Thread.sleep(25000);
+		Thread.sleep(30000);
 		EventHandlerConsumer<String, String> eventConsumer;
 		do {
 			eventConsumer = scheduler.getEventConsumer();
