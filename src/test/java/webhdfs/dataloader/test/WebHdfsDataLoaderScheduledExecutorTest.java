@@ -75,7 +75,7 @@ public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpring
 			.valueTranslatorType(String.class)
 			.build();
 		try {
-			for (int i = 0; i < 500; i++) {
+			for (int i = 0; i < 100; i++) {
 				handler.write(topic, key, data);
 			}
 			handler.writerClose();

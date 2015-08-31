@@ -26,6 +26,7 @@ public class WebHdfsWorkFlow {
 	private WebHdfsWorkFlow(Builder builder) {
 		this.workFlow = builder.workFlow;
 		webHdfs = builder.webHdfsBuilder
+			.path(builder.path)
 			.fileName(builder.fileName)
 			.user(builder.user)
 			.overwrite(builder.overwrite)
@@ -38,6 +39,7 @@ public class WebHdfsWorkFlow {
 		private String fileName;
 		private String user;
 		private String overwrite;
+		private String path; 
 		private Map<String, WebHdfsOpsArgs> workFlow;
 
 		public Builder() {
@@ -65,6 +67,11 @@ public class WebHdfsWorkFlow {
 			this.overwrite = overwrite;
 			return this;
 		}				
+		
+		public Builder path(String path) {
+			this.path = path;
+			return this;
+		}	
 		
 		public WebHdfsWorkFlow build() {
 			return new WebHdfsWorkFlow(this);
