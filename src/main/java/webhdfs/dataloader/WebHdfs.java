@@ -31,6 +31,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import webhdfs.dataloader.WebHdfsWorkFlow.Builder;
 import webhdfs.dataloader.exception.WebHdfsException;
 import static webhdfs.dataloader.WebHdfsParams.*;
 
@@ -47,6 +48,9 @@ public class WebHdfs {
 	private WebHdfs (Builder builder) {
 		webHdfsConfig = builder.webHdfsConfig;
 		
+		if (builder.path != null)  {
+			webHdfsConfig.setPath(builder.path);
+		}
 		if (builder.fileName != null)  {
 			webHdfsConfig.setFileName(builder.fileName);
 		}
@@ -64,6 +68,7 @@ public class WebHdfs {
 	public static class Builder {
 		@Autowired WebHdfsConfiguration webHdfsConfig;
 		private String fileName;
+		private String path;
 		private String user;
 		private String overwrite;
 		
@@ -85,6 +90,11 @@ public class WebHdfs {
 			this.overwrite = overwrite;
 			return this;
 		}				
+		
+		public Builder path(String path) {
+			this.path = path;
+			return this;
+		}	
 		
 		public WebHdfs build () {
 			return new WebHdfs(this);
@@ -308,14 +318,14 @@ public class WebHdfs {
 	 * @return
 	 * @throws WebHdfsException
 	 */
-	public CloseableHttpResponse mkdirs (String file) throws WebHdfsException {
+	public CloseableHttpResponse mkdirs (String path) throws WebHdfsException {
 		URI uri = null;
 		try {
 			uri = new URIBuilder()
 				.setScheme(webHdfsConfig.getScheme())
 				.setHost(webHdfsConfig.getHost())
 				.setPort(webHdfsConfig.getPort())
-				.setPath(webHdfsConfig.getWEBHDFS_PREFIX() +  file)
+				.setPath(webHdfsConfig.getWEBHDFS_PREFIX() + path)
 				.setParameter(USERNAME, webHdfsConfig.getUser())
 				.setParameter(OP, MKDIRS)
 				.setParameter(PERMISSION, DEFAULT_PERMISSIONS) 

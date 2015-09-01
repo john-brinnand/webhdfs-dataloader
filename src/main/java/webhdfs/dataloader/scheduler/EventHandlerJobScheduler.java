@@ -29,7 +29,7 @@ public class EventHandlerJobScheduler {
 	@Autowired
 	private EventHandler<String, String> eventHandlerConsumer;
 	@Autowired
-	final EventHandlerConsumer<String, String> eventConsumer = new EventHandlerConsumer<String, String>();
+	EventHandlerConsumer<String, String> eventConsumer = new EventHandlerConsumer<String, String>();
 	private final ScheduledExecutorService pool = Executors
 			.newScheduledThreadPool(1);
 
@@ -64,6 +64,7 @@ public class EventHandlerJobScheduler {
 				endTime = System.currentTimeMillis();
 				log.info("------------------  Load Completed  in {} {} ", 
 					endTime - startTime, TimeUnit.MILLISECONDS.toString().toLowerCase());
+				eventConsumer.setCreated(false);
 			}
 		}, initialDelay, period, timeUnit);
 
