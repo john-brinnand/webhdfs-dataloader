@@ -21,7 +21,7 @@ import org.springframework.util.Assert;
 @Getter
 public class WebHdfsWorkFlow {
 	private Map<String, WebHdfsOpsArgs> workFlow;
-	private WebHdfs webHdfs;
+	private @Autowired WebHdfs webHdfs;
 	
 	private WebHdfsWorkFlow(Builder builder) {
 		this.workFlow = builder.workFlow;

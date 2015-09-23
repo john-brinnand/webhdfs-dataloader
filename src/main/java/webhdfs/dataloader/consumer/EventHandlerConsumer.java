@@ -51,7 +51,7 @@ public class EventHandlerConsumer<K, V> implements MessageConsumer<K, V>  {
 	private WebHdfsWorkFlow workFlow;
 	private boolean isCreated = false;
 	private DateTimeFormatter customDTF;
-	private static AtomicLong iteration = new AtomicLong();
+	private static AtomicLong iteration; 
 	
 	@PostConstruct
 	public void init() {
@@ -60,6 +60,8 @@ public class EventHandlerConsumer<K, V> implements MessageConsumer<K, V>  {
 	        .appendValue(MONTH_OF_YEAR, 2)
 	        .appendValue(DAY_OF_MONTH, 2)
 	        .toFormatter();
+		
+		iteration = new AtomicLong();
 	}
 
 	@Override
