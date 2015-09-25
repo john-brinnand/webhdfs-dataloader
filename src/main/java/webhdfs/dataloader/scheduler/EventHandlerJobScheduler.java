@@ -27,11 +27,10 @@ public class EventHandlerJobScheduler {
 	@Autowired
 	EventHandlerJobSchedulerConfiguration eventHandlerJobSchedulerConfig;
 	@Autowired
-	private EventHandler<String, String> eventHandlerConsumer;
+	private EventHandler<String, String> eventHandler;
 	@Autowired
 	EventHandlerConsumer<String, String> eventConsumer = new EventHandlerConsumer<String, String>();
-	private final ScheduledExecutorService pool = Executors
-			.newScheduledThreadPool(1);
+	private final ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
 
 	/**
 	 * Start the data load.
@@ -43,10 +42,12 @@ public class EventHandlerJobScheduler {
 	 */
 	public EventHandlerConsumer<String, String> loadData()
 			throws TimeoutException, InterruptedException, ExecutionException {
-		// TODO - set the properties from the environment.
-		eventHandlerConsumer.groupId("testGroup")
-				.topic("audience-server-bluekai")
-				.partition(0)
+		// Note: the topic and groupId must be set in 
+		// the environment. Otherwise default properties
+		// will be in effect and data may not be received
+		// from Kafka.
+		//************************************************
+		eventHandler.partition(0)
 				.keyTranslatorType(String.class)
 				.valueTranslatorType(String.class)
 				.build();
@@ -59,7 +60,7 @@ public class EventHandlerJobScheduler {
 			public void run() {
 				final long endTime;
 				final long startTime = System.currentTimeMillis();
-				eventHandlerConsumer.readAll(eventHandlerConsumer.getTopic(),
+				eventHandler.readAll(eventHandler.getTopic(),
 						eventConsumer);
 				endTime = System.currentTimeMillis();
 				log.info("------------------  Load Completed  in {} {} ", 
