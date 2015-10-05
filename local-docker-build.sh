@@ -2,6 +2,9 @@
 
 #set -e
 
+PUSH_DOCKER="local"
+echo "PUSH_DOCKER is $PUSH_DOCKER"
+
 DOCKER_BUILD=docker/build
 if [ -f "$DOCKER_BUILD" ]; then
     echo "Removing $DOCKER_BUILD" 
@@ -16,6 +19,11 @@ fi
 if [ -z "$2" ]; then
     echo "Arg 2 should be an version and cannot be empty."
     exit
+fi
+
+if [ "$3" == push ]; then
+   echo "Arg 3 is $3"
+   PUSH_DOCKER=$3
 fi
 
 BASE_DIR=`pwd`
@@ -74,4 +82,10 @@ CMD bash -C '/usr/local/bin/webhdfs-dataloader.sh'; 'bash'
 EOF
 
 docker build -t docker.spongecell.net/spongecell/${ARTIFACT_NAME}:${DOCKER_TAG} .
-#docker push docker.spongecell.net/spongecell/${ARTIFACT_NAME}:${DOCKER_TAG}
+
+echo "PUSH_DOCKER is $PUSH_DOCKER"
+
+if [ "$PUSH_DOCKER" == "push" ]; then
+    echo "Pushing ${ARTIFACT_NAME}:${DOCKER_TAG} to docker.spongecell.net/spongecell"
+    docker push docker.spongecell.net/spongecell/${ARTIFACT_NAME}:${DOCKER_TAG}
+fi
