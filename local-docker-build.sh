@@ -54,14 +54,24 @@ EXPOSE 8080
 ADD ${ARTIFACT_NAME}-${ARTIFACT_VERSION}.jar /usr/local/bin/${ARTIFACT_NAME}-${ARTIFACT_VERSION}.jar
 ADD ${ARTIFACT_NAME}.sh /usr/local/bin/$ARTIFACT_NAME.sh
 
+ENV datastream.kafkaBrokers=192.168.99.100:9092
+ENV datastream.schemaRegistry=https://192.168.99.100:8081
+ENV datastream.zookeeperConnect=192.168.99.100:2181
+ENV datastream.zookeeperSyncTime=200
+ENV datastream.zookeeperSyncTimeout=400
+ENV datastream.consumer.metadataFetchTimeout=100
+ENV datastream.consumer.groupId=testGroup
+ENV datastream.topic=audience-server-bluekai
+ENV datastream.producer.compressionType=snappy
+ENV eventhandler.scheduler.initialDelay=1
+ENV eventhandler.scheduler.period=30000
+ENV webhdfs.host=dockerhadoop
+ENV webhdfs.baseDir=/mydata
+ENV webhdfs.fileName=myFile.txt
+
 CMD bash -C '/usr/local/bin/webhdfs-dataloader.sh'; 'bash'
-#CMD bash -C '/usr/local/bin/webhdfs-dataloader.sh start'; 'bash'
 
 EOF
-
-echo "-------- Docker file ---------"
-cat Dockerfile
-echo "-----------------"
 
 docker build -t docker.spongecell.net/spongecell/${ARTIFACT_NAME}:${DOCKER_TAG} .
 #docker push docker.spongecell.net/spongecell/${ARTIFACT_NAME}:${DOCKER_TAG}
