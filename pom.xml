@@ -27,6 +27,32 @@
 		</org.apache.httpcomponents.httpclient.version>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>aws-release</id>
+			<name>AWS Release Repository</name>
+			<url>s3://mvn.spongecell.com/releases</url>
+		</repository>
+		<repository>
+			<id>aws-snapshot</id>
+			<name>AWS Snapshot Repository</name>
+			<url>s3://mvn.spongecell.com/snapshots</url>
+		</repository>
+	</repositories>
+
+	<distributionManagement>
+		<repository>
+			<id>aws-release</id>
+			<name>AWS Release Repository</name>
+			<url>s3://mvn.spongecell.com/releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>aws-snapshot</id>
+			<name>AWS Snapshot Repository</name>
+			<url>s3://mvn.spongecell.com/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -107,6 +133,13 @@
 	</dependencies>
 
 	<build>
+		<extensions>
+			<extension>
+				<groupId>org.springframework.build</groupId>
+				<artifactId>aws-maven</artifactId>
+				<version>5.0.0.RELEASE</version>
+			</extension>
+		</extensions>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
