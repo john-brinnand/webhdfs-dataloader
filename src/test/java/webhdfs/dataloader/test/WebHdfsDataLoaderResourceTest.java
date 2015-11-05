@@ -85,6 +85,7 @@ public class WebHdfsDataLoaderResourceTest extends AbstractTestNGSpringContextTe
 		
 		String[] topics = new String[10];
 		topics[0] = "audience_server_test_provider";
+		request.param("id", senderId);
 		request.param("topics", topics);
 
 		ResultActions actions = mockMvc.perform(request);
@@ -99,7 +100,7 @@ public class WebHdfsDataLoaderResourceTest extends AbstractTestNGSpringContextTe
 			mvcResult.getResponse().getContentAsString());
 		
 		Assert.assertEquals(mvcResult.getResponse().getContentAsString(),
-				"Greetings " + senderId + " from the postRequestParamEndpoint");
+				"Greetings " + senderId + " from the postRequestParamEndpoint.");
 	}	
 	
 	@Test(priority = 1, groups = "integration")

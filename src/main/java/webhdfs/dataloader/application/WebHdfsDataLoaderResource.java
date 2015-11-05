@@ -58,7 +58,7 @@ public class WebHdfsDataLoaderResource {
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?> postRequestParamEndpoint(HttpServletRequest request,
 			@RequestParam(value = "id") String id) throws Exception {
-		String content = "Greetings " + id  + " from the postRequestParamEndpoint.\n"; 
+		String content = "Greetings " + id  + " from the postRequestParamEndpoint."; 
 		log.info("Returning : {} ", content);
 		ResponseEntity<String> response = new ResponseEntity<String>(content, HttpStatus.OK);
 		return response; 
