@@ -66,8 +66,6 @@ CMD bash -C '/usr/local/bin/webhdfs-dataloader.sh'; 'bash'
 ## Above line rel. to clarification on prior mention of webhdfs-dataloader.sh. --BC
 ##
 
-EOF
-EXPOSE 8080
 VOLUME /tmp
 
 EOF
