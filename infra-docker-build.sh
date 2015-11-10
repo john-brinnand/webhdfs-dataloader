@@ -8,14 +8,7 @@ export ARTIFACT_NAME="jetstream"
 export DOCKER_TAG="${BRANCH##*/}-${BUILD_ID}-${DATE_TAG}"
 
 mkdir -p docker/build
-# TODO the jar file must be pulled from S3
-# s3://mvn.spongecell.com/snapshots/handler/webhdfs-dataloader/0.0.1-SNAPSHOT/webhdfs-dataloader-0.0.1-20151109.232344-16.jar
-# The script webhdfs-dataloader.sh must be retrieved from some source location:
-# Either s3 or from the Java source. Perhaps the jetstream build can push it to 
-# s3 as well. Without this, the next two lines will fail, as the failed build indicates.
-##
-## This would be resolved if run within the jetstream-build job instead of an additional jenkins job (i.e. jetstream-dockerize). --BC
-##
+
 mv **/target/*.jar docker/build
 
 ##
@@ -50,7 +43,7 @@ ADD ${ARTIFACT_NAME}.sh /usr/local/bin/$ARTIFACT_NAME.sh
 # or DNS entries for kafka, schemaRegistry, zookeeper, etc
 # in Staging.
 ##
-## These to be sourced from Consul --BC
+## These variables can remain as-is and will be overridden at deploy time. --BC
 ##
 ENV datastream.kafkaBrokers=192.168.99.100:9092
 ENV datastream.schemaRegistry=https://192.168.99.100:8081
@@ -67,7 +60,7 @@ ENV eventhandler.scheduler.initialDelay=1
 ENV eventhandler.scheduler.period=30000
 
 ##
-## Are these the names we wish to continue using? --BC
+## These variables can remain as-is and will be overridden at deploy time. --BC
 ##
 ENV webhdfs.host=dockerhadoop
 ENV webhdfs.baseDir=/mydata
