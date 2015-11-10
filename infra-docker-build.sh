@@ -1,13 +1,16 @@
+#!/bin/bash
+set -e
+
 export DATE_TAG=`date +%Y%m%d`
 
 export ARTIFACT_NAME="jetstream"
 
-export DOCKER_TAG="${ARTIFACT_NAME}-${BRANCH}${BUILD_ID}-${DATE_TAG}"
+export DOCKER_TAG="${BRANCH##*/}-${BUILD_ID}-${DATE_TAG}"
 
 mkdir -p docker/build
 # TODO the jar file must be pulled from S3
 # s3://mvn.spongecell.com/snapshots/handler/webhdfs-dataloader/0.0.1-SNAPSHOT/webhdfs-dataloader-0.0.1-20151109.232344-16.jar
-# The script webhdfs-dataloader.sh must be retrieved from some source location
+# The script webhdfs-dataloader.sh must be retrieved from some source location:
 # Either s3 or from the Java source. Perhaps the jetstream build can push it to 
 # s3 as well. Without this, the next two lines will fail, as the failed build indicates.
 mv **/target/*.jar docker/build
@@ -21,12 +24,18 @@ RUN apt-get install -y software-properties-common
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886
 RUN add-apt-repository -y ppa:webupd8team/java
 RUN apt-get update
-RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
-RUN apt-get install -y git-core curl zlib1g-dev build-essential libssl-dev libreadline-dev libyaml-dev libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev python-software-properties oracle-java8-installer oracle-java8-installer vim awscli perl-base
+RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true |\
+    /usr/bin/debconf-set-selections
+RUN apt-get install -y git-core curl zlib1g-dev build-essential libssl-dev \
+                       libreadline-dev libyaml-dev libsqlite3-dev sqlite3 \
+                       libxml2-dev libxslt1-dev libcurl4-openssl-dev \
+                       python-software-properties oracle-java8-installer \
+                       vim awscli perl-base
 RUN update-java-alternatives -s java-8-oracle
 
 EXPOSE 8080
 
+# TODO - not sure if adding the ${ARTIFACT_NAME} is overkill here.
 ADD ${ARTIFACT_NAME}-${VERSION_TAG}.jar /usr/local/bin/${ARTIFACT_NAME}-${DOCKER_TAG}.jar
 ADD ${ARTIFACT_NAME}.sh /usr/local/bin/$ARTIFACT_NAME.sh
 
