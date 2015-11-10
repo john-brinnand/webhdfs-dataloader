@@ -39,15 +39,17 @@ EXPOSE 8080
 ADD ${ARTIFACT_NAME}-${VERSION_TAG}.jar /usr/local/bin/${ARTIFACT_NAME}-${DOCKER_TAG}.jar
 ADD ${ARTIFACT_NAME}.sh /usr/local/bin/$ARTIFACT_NAME.sh
 
-# TODO modify the ip addresses to reflect the IP Addressses
-# or DNS entries for kafka, schemaRegistry, zookeeper, etc
-# in Staging.
 ##
-## These variables can remain as-is and will be overridden at deploy time. --BC
+## Environment variables (and these in particular) in this file are
+## essentially placeholders and will be overridden
+## at deploy/run time. --BC
 ##
 ENV datastream.kafkaBrokers=192.168.99.100:9092
 ENV datastream.schemaRegistry=https://192.168.99.100:8081
 ENV datastream.zookeeperConnect=192.168.99.100:2181
+ENV webhdfs.host=dockerhadoop
+ENV webhdfs.baseDir=/mydata
+ENV webhdfs.fileName=myFile.txt
 ##
 
 ENV datastream.zookeeperSyncTime=200
@@ -59,17 +61,8 @@ ENV datastream.producer.compressionType=snappy
 ENV eventhandler.scheduler.initialDelay=1
 ENV eventhandler.scheduler.period=30000
 
-##
-## These variables can remain as-is and will be overridden at deploy time. --BC
-##
-ENV webhdfs.host=dockerhadoop
-ENV webhdfs.baseDir=/mydata
-ENV webhdfs.fileName=myFile.txt
-##
-
 CMD bash -C '/usr/local/bin/webhdfs-dataloader.sh'; 'bash'
 ##
-## Why is there a trailing 'bash' on the above command?
 ## Above line rel. to clarification on prior mention of webhdfs-dataloader.sh. --BC
 ##
 
