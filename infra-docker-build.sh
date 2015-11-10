@@ -9,12 +9,12 @@ export DOCKER_TAG="${BRANCH##*/}-${BUILD_ID}-${DATE_TAG}"
 
 mkdir -p docker/build
 
-mv **/target/*.jar docker/build
+mv ./target/*.jar ./docker/build/
 
 ##
 ## Seeking clarification on what role this script fulfills. --BC
 ##
-cp **/src/test/resources/webhdfs-dataloader.sh docker/build/.
+cp ./src/test/resources/webhdfs-dataloader.sh ./docker/build/
 
 cd docker
 cat > Dockerfile <<EOF
