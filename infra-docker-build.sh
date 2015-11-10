@@ -13,7 +13,14 @@ mkdir -p docker/build
 # The script webhdfs-dataloader.sh must be retrieved from some source location:
 # Either s3 or from the Java source. Perhaps the jetstream build can push it to 
 # s3 as well. Without this, the next two lines will fail, as the failed build indicates.
+##
+## This would be resolved if run within the jetstream-build job instead of an additional jenkins job (i.e. jetstream-dockerize). --BC
+##
 mv **/target/*.jar docker/build
+
+##
+## Seeking clarification on what role this script fulfills. --BC
+##
 cp **/src/test/resources/webhdfs-dataloader.sh docker/build/.
 
 cd docker
@@ -42,7 +49,9 @@ ADD ${ARTIFACT_NAME}.sh /usr/local/bin/$ARTIFACT_NAME.sh
 # TODO modify the ip addresses to reflect the IP Addressses
 # or DNS entries for kafka, schemaRegistry, zookeeper, etc
 # in Staging.
-## These to be sourced from Consul -BC
+##
+## These to be sourced from Consul --BC
+##
 ENV datastream.kafkaBrokers=192.168.99.100:9092
 ENV datastream.schemaRegistry=https://192.168.99.100:8081
 ENV datastream.zookeeperConnect=192.168.99.100:2181
@@ -56,12 +65,20 @@ ENV datastream.topic=audience-server-bluekai
 ENV datastream.producer.compressionType=snappy
 ENV eventhandler.scheduler.initialDelay=1
 ENV eventhandler.scheduler.period=30000
+
+##
+## Are these the names we wish to continue using? --BC
+##
 ENV webhdfs.host=dockerhadoop
 ENV webhdfs.baseDir=/mydata
 ENV webhdfs.fileName=myFile.txt
+##
 
 CMD bash -C '/usr/local/bin/webhdfs-dataloader.sh'; 'bash'
+##
 ## Why is there a trailing 'bash' on the above command?
+## Above line rel. to clarification on prior mention of webhdfs-dataloader.sh. --BC
+##
 
 EOF
 EXPOSE 8080
@@ -79,5 +96,6 @@ git tag ${DOCKER_TAG}
 git push origin ${DOCKER_TAG}
 
 
-## Addenda
-# Why not check the Dockerfile itself into the codebase?
+### Addenda
+## Why not check the Dockerfile itself into the codebase? --BC
+##
