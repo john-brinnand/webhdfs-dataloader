@@ -2,10 +2,11 @@
 set -e
 
 export DATE_TAG=`date +%Y%m%d`
-
 export ARTIFACT_NAME="jetstream"
-
 export DOCKER_TAG="${BRANCH##*/}-${BUILD_ID}-${DATE_TAG}"
+
+# Create a Docker Tag
+echo "export TAG=$DOCKER_TAG" | tee tag.sh
 
 mkdir -p docker/build
 
@@ -33,11 +34,9 @@ RUN apt-get install -y git-core curl zlib1g-dev build-essential libssl-dev \
                        vim awscli perl-base
 RUN update-java-alternatives -s java-8-oracle
 
-EXPOSE 8080
-
 # TODO - not sure if adding the ${ARTIFACT_NAME} is overkill here.
-ADD ${ARTIFACT_NAME}-${VERSION_TAG}.jar /usr/local/bin/${ARTIFACT_NAME}-${DOCKER_TAG}.jar
-ADD ${ARTIFACT_NAME}.sh /usr/local/bin/$ARTIFACT_NAME.sh
+COPY build/webhdfs-dataloader-0.0.1-SNAPSHOT.jar /usr/local/bin/${ARTIFACT_NAME}-${DOCKER_TAG}.jar
+COPY build/webhdfs-dataloader.sh /usr/local/bin/$ARTIFACT_NAME.sh
 
 ##
 ## Environment variables (and these in particular) in this file are
@@ -67,6 +66,7 @@ CMD bash -C '/usr/local/bin/webhdfs-dataloader.sh'; 'bash'
 ##
 
 VOLUME /tmp
+EXPOSE 8080
 
 EOF
 for buildfile in `ls build`; do
