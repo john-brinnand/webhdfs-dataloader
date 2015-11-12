@@ -26,6 +26,7 @@ FROM ubuntu:14.04.2
 RUN apt-get install -y software-properties-common
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886
 RUN add-apt-repository -y ppa:webupd8team/java
+RUN apt-get clean
 RUN apt-get update
 RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true |\
     /usr/bin/debconf-set-selections
