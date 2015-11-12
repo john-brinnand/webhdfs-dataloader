@@ -60,7 +60,9 @@ ENV datastream.producer.compressionType=snappy
 ENV eventhandler.scheduler.initialDelay=1
 ENV eventhandler.scheduler.period=30000
 
-CMD bash -C '/usr/local/bin/webhdfs-dataloader.sh'; 'bash'
+### Commenting this out, as the script is being replaced with supervisord process to be passed in deploy JSON. --BC
+#CMD bash -C '/usr/local/bin/webhdfs-dataloader.sh'; 'bash'
+###
 ##
 ## Above line rel. to clarification on prior mention of webhdfs-dataloader.sh. --BC
 ##
