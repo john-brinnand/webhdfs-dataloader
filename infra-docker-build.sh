@@ -15,7 +15,9 @@ mv ./target/*.jar ./docker/build/
 ##
 ## Seeking clarification on what role this script fulfills. --BC
 ##
-cp ./src/test/resources/webhdfs-dataloader.sh ./docker/build/
+### TO BE REPLACED WITH SUPERVISORD --BC
+#cp ./src/test/resources/webhdfs-dataloader.sh ./docker/build/
+###
 
 cd docker
 cat > Dockerfile <<EOF
@@ -36,7 +38,9 @@ RUN update-java-alternatives -s java-8-oracle
 
 # TODO - not sure if adding the ${ARTIFACT_NAME} is overkill here.
 COPY build/webhdfs-dataloader-0.0.1-SNAPSHOT.jar /usr/local/bin/${ARTIFACT_NAME}-${DOCKER_TAG}.jar
-COPY build/webhdfs-dataloader.sh /usr/local/bin/$ARTIFACT_NAME.sh
+### TO BE REPLACED WITH SUPERVISORD --BC
+#COPY build/webhdfs-dataloader.sh /usr/local/bin/$ARTIFACT_NAME.sh
+###
 
 ##
 ## Environment variables (and these in particular) in this file are
