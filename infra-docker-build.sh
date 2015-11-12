@@ -31,7 +31,7 @@ RUN apt-get install -y git-core curl zlib1g-dev build-essential libssl-dev \
                        libreadline-dev libyaml-dev libsqlite3-dev sqlite3 \
                        libxml2-dev libxslt1-dev libcurl4-openssl-dev \
                        python-software-properties oracle-java8-installer \
-                       vim awscli perl-base
+                       vim awscli perl-base supervisor
 RUN update-java-alternatives -s java-8-oracle
 
 # TODO - not sure if adding the ${ARTIFACT_NAME} is overkill here.
