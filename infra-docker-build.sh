@@ -12,10 +12,7 @@ mkdir -p docker/build
 
 mv ./target/*.jar ./docker/build/
 
-##
-## Seeking clarification on what role this script fulfills. --BC
-##
-### TO BE REPLACED WITH SUPERVISORD --BC
+### Currently being replaced with supervisord process.  Keeping this line temporarily for context.
 #cp ./src/test/resources/webhdfs-dataloader.sh ./docker/build/
 ###
 
@@ -30,10 +27,6 @@ stdout_logfile_maxbytes=0
 stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
 EOF
-
-# just debugging.
-ls -lh ./supervisord/
-cat ./supervisord/*.conf
 
 # Will eventually move this heredoc to a dedicated Dockerfile in git.
 cat > Dockerfile <<EOF
@@ -53,11 +46,11 @@ RUN apt-get install -y git-core curl zlib1g-dev build-essential libssl-dev \
                        vim awscli perl-base supervisor
 RUN update-java-alternatives -s java-8-oracle
 
-# TODO - not sure if adding the ${ARTIFACT_NAME} is overkill here.
 COPY build/webhdfs-dataloader-0.0.1-SNAPSHOT.jar /usr/local/bin/${ARTIFACT_NAME}-${DOCKER_TAG}.jar
 COPY etc/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 COPY supervisord/jetstream.conf /etc/supervisor/conf.d/jetstream.conf
-### TO BE REPLACED WITH SUPERVISORD --BC
+
+### Currently being replaced with supervisord process.  Keeping this line temporarily for context.
 #COPY build/webhdfs-dataloader.sh /usr/local/bin/$ARTIFACT_NAME.sh
 ###
 
@@ -83,12 +76,9 @@ ENV datastream.producer.compressionType=snappy
 ENV eventhandler.scheduler.initialDelay=1
 ENV eventhandler.scheduler.period=30000
 
-### Commenting this out, as the script is being replaced with supervisord process to be passed in deploy JSON. --BC
+### Currently being replaced with supervisord process.  Keeping this line temporarily for context.
 #CMD bash -C '/usr/local/bin/webhdfs-dataloader.sh'; 'bash'
 ###
-##
-## Above line rel. to clarification on prior mention of webhdfs-dataloader.sh. --BC
-##
 
 VOLUME /tmp
 EXPOSE 8080
@@ -103,8 +93,3 @@ docker push  docker.spongecell.net/spongecell/${ARTIFACT_NAME}:${DOCKER_TAG}
 
 git tag ${DOCKER_TAG} 
 git push origin ${DOCKER_TAG}
-
-
-### Addenda
-## Why not check the Dockerfile itself into the codebase? --BC
-##
