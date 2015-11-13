@@ -20,6 +20,22 @@ mv ./target/*.jar ./docker/build/
 ###
 
 cd docker
+
+# Generate supervisor config based on artifact info.
+cat > ./supervisord/${ARTIFACT_NAME}.conf <<EOF
+[program:${ARTIFACT_NAME}]
+command=java -jar /usr/local/bin/${ARTIFACT_NAME}-${DOCKER_TAG}.jar
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+EOF
+
+# just debugging.
+ls -lh ./supervisord/
+cat ./supervisord/*.conf
+
+# Will eventually move this heredoc to a dedicated Dockerfile in git.
 cat > Dockerfile <<EOF
 FROM ubuntu:14.04.2
 
