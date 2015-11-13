@@ -39,6 +39,8 @@ RUN update-java-alternatives -s java-8-oracle
 
 # TODO - not sure if adding the ${ARTIFACT_NAME} is overkill here.
 COPY build/webhdfs-dataloader-0.0.1-SNAPSHOT.jar /usr/local/bin/${ARTIFACT_NAME}-${DOCKER_TAG}.jar
+COPY etc/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+COPY supervisord/jetstream.conf /etc/supervisor/conf.d/jetstream.conf
 ### TO BE REPLACED WITH SUPERVISORD --BC
 #COPY build/webhdfs-dataloader.sh /usr/local/bin/$ARTIFACT_NAME.sh
 ###
