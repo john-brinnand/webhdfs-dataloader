@@ -12,10 +12,6 @@ mkdir -p docker/build
 
 mv ./target/*.jar ./docker/build/
 
-### Currently being replaced with supervisord process.  Keeping this line temporarily for context.
-#cp ./src/test/resources/webhdfs-dataloader.sh ./docker/build/
-###
-
 cd docker
 
 # Generate supervisor config based on artifact info.
@@ -50,18 +46,7 @@ COPY build/webhdfs-dataloader-0.0.1-SNAPSHOT.jar /usr/local/bin/${ARTIFACT_NAME}
 COPY etc/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 COPY supervisord/jetstream.conf /etc/supervisor/conf.d/jetstream.conf
 
-### Currently being replaced with supervisord process.  Keeping this line temporarily for context.
-#COPY build/webhdfs-dataloader.sh /usr/local/bin/$ARTIFACT_NAME.sh
-###
-
-##
-## Environment variables (and these in particular) in this file are
-## essentially placeholders and will be overridden
-## at deploy/run time. --BC
-##
-ENV datastream.kafkaBrokers=192.168.99.100:9092
-ENV datastream.schemaRegistry=https://192.168.99.100:8081
-ENV datastream.zookeeperConnect=192.168.99.100:2181
+## To be deleted in favor of passing at deploy. --BC
 ENV webhdfs.host=dockerhadoop
 ENV webhdfs.baseDir=/mydata
 ENV webhdfs.fileName=myFile.txt
@@ -75,10 +60,6 @@ ENV datastream.topic=audience-server-bluekai
 ENV datastream.producer.compressionType=snappy
 ENV eventhandler.scheduler.initialDelay=1
 ENV eventhandler.scheduler.period=30000
-
-### Currently being replaced with supervisord process.  Keeping this line temporarily for context.
-#CMD bash -C '/usr/local/bin/webhdfs-dataloader.sh'; 'bash'
-###
 
 VOLUME /tmp
 EXPOSE 8080
