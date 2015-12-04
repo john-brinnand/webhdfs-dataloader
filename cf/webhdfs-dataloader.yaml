@@ -1,0 +1,177 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Internal DevOps WebHDFSDataLoader
+Parameters:
+  AvailabilityZone:
+    Type: String
+  ClusterSize:
+    Type: Number
+  DeployEnvironment:
+    Type: String
+  DnsZone:
+    Type: String
+  ImageId:
+    Type: String
+  InstanceType:
+    Type: String
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+  NodeName:
+    Type: String
+  SecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+  Subnet:
+    Type: String
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  VpcName:
+    Type: String
+  SNSAlarm:
+    Type: String
+Resources:
+  WebHDFSDataLoaderInternalSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Internal proxy sg
+      VpcId:
+        Ref: VpcId
+      SecurityGroupIngress:
+        - IpProtocol: TCP
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+  Route53RecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Comment:
+        Fn::Join:
+          - ""
+          - - CloudFormation
+            - Ref: AWS::StackName
+      HostedZoneName:
+        Ref: DnsZone
+      Name:
+        Fn::Join:
+          - ""
+          - - Ref: AWS::StackName
+            - .
+            - Ref: DnsZone
+      ResourceRecords:
+        - Fn::GetAtt:
+          - WebHDFSDataLoaderIntInstance
+          - PublicDnsName
+      TTL: 300
+      Type: CNAME
+  ChefValidatorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version : 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+            - sts:AssumeRole
+      Path: /ChefValidatorRole/
+      Policies:
+      - PolicyName: ChefValidator
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: Allow
+            Action: s3:GetObject
+            Resource: arn:aws:s3:::spongecell-infra/us-east-1-infra-chef/validators/spongecell_validator.pem
+          - Effect: Allow
+            Action: s3:GetObject
+            Resource: arn:aws:s3:::spongecell-infra/us-east-1-infra-chef/server_certs/us-east-1-infra-chef.spongecell.net.crt
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /ChefValidatorRole/
+      Roles:
+        - Ref: ChefValidatorRole
+  WebHDFSDataLoaderIntInstance:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Authentication:
+        ChefValidator:
+          type: S3
+          roleName:
+            Ref: ChefValidatorRole
+      AWS::CloudFormation::Init:
+        config:
+          commands:
+            mkdir:
+              command: mkdir -p /etc/chef/trusted_certs
+          files:
+            "/etc/chef/trusted_certs/us-east-1-infra-chef_spongecell_net.crt":
+              authentication: ChefValidator
+              source: https://s3.amazonaws.com/spongecell-infra/us-east-1-infra-chef/server_certs/us-east-1-infra-chef.spongecell.net.crt
+            "/etc/chef/spongecell_validator.pem":
+              authentication: ChefValidator
+              source: https://s3.amazonaws.com/spongecell-infra/us-east-1-infra-chef/validators/spongecell_validator.pem
+            "/etc/chef/node.json":
+              context:
+                vpc_name:
+                  Ref: VpcName
+                deployment:
+                  Ref: DeployEnvironment
+              content: |
+                {
+                  "vpc_name": "{{vpc_name}}",
+                  "deployment": "{{deployment}}"
+                }
+            "/etc/chef/client.rb":
+              context:
+                deployment:
+                  Ref: VpcName
+                node_name:
+                  Ref: NodeName
+              content: |
+                node_name "{{node_name}}"
+                chef_server_url "https://us-east-1-infra-chef.spongecell.net/organizations/spongecell"
+                environment "{{deployment}}"
+                json_attribs "/etc/chef/node.json"
+                validation_client_name "spongecell-validator"
+                validation_key "/etc/chef/spongecell_validator.pem"
+    Properties:
+      AvailabilityZone:
+        Ref: AvailabilityZone
+      IamInstanceProfile:
+        Ref: InstanceProfile
+      ImageId:
+        Ref: ImageId
+      InstanceType:
+        Ref: InstanceType
+      KeyName:
+        Ref: KeyName
+      NetworkInterfaces:
+      - AssociatePublicIpAddress: 'true'
+        DeviceIndex: 0
+        GroupSet:
+         - Ref: SecurityGroupId
+         - Ref: WebHDFSDataLoaderInternalSecurityGroup
+        SubnetId:
+          Ref: Subnet
+      Tags:
+      - Key: Name
+        Value: webhdfs-dataloader-development
+      - Key: Role
+        Value: webhdfs-dataloader
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - |
+              #!/bin/bash -ex
+              # Process CloudFormation init definitions
+            - 'cfn-init -s '
+            - Ref: AWS::StackName
+            - " -r WebHDFSDataLoaderIntInstance "
+            - "    --region "
+            - Ref: AWS::Region
+            - |
+
+              chef-client --runlist "recipe[sc_base::default]"

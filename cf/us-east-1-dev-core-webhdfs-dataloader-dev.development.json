@@ -1,0 +1,54 @@
+[
+  {
+    "ParameterKey": "AvailabilityZone",
+    "ParameterValue": "us-east-1b"
+  },
+  {
+    "ParameterKey": "ClusterSize",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "DeployEnvironment",
+    "ParameterValue": "development"
+  },
+  {
+    "ParameterKey": "DnsZone",
+    "ParameterValue": "spongecell.net."
+  },
+  {
+    "ParameterKey": "ImageId",
+    "ParameterValue": "ami-b4655ddc"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "r3.xlarge"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "us-east-1-prod-default"
+  },
+  {
+    "ParameterKey": "SecurityGroupId",
+    "ParameterValue": "sg-52fd9536"
+  },
+  {
+    "ParameterKey": "Subnet",
+    "ParameterValue": "subnet-d28034f9"
+  },
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-eb4b168e"
+  },
+  {
+    "ParameterKey": "VpcName",
+    "ParameterValue": "us-east-1-dev-core"
+  },
+  {
+    "ParameterKey": "NodeName",
+    "ParameterValue": "webhdfs-dataloader-dev.spongecell.net"
+  },
+  {
+    "ParameterKey": "SNSAlarm",
+    "ParameterValue": "arn:aws:sns:us-east-1:791574481547:Trash"
+  }
+]
