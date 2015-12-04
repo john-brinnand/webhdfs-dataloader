@@ -115,6 +115,7 @@ public class EventHandlerConsumer<K, V> implements MessageConsumer<K, V>  {
 		
 		workFlow = webHdfsWorkFlowBuilder
 			.path(baseDir.getFile().getPath())
+			.user(webHdfsConfig.getUser())
 			.addEntry("CreateBaseDir", 
 				WebHdfsOps.MKDIRS, 
 				HttpStatus.OK, 

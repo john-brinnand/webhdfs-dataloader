@@ -71,7 +71,7 @@ ADD ${ARTIFACT_NAME}-${VERSION_TAG}.jar /usr/local/bin/${ARTIFACT_NAME}-${VERSIO
 ADD ${ARTIFACT_NAME}.sh /usr/local/bin/$ARTIFACT_NAME.sh
 
 ENV datastream.kafkaBrokers=192.168.99.100:9092
-ENV datastream.schemaRegistry=https://192.168.99.100:8081
+ENV datastream.schemaRegistryUrl=https://192.168.99.100:8081
 ENV datastream.zookeeperConnect=192.168.99.100:2181
 ENV datastream.zookeeperSyncTime=200
 ENV datastream.zookeeperSyncTimeout=400

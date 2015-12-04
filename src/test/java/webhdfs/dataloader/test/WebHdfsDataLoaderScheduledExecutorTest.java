@@ -54,7 +54,6 @@ public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpring
 	public void beforeTest() {
 		data = readFile("/creative-event-data.json");
 	}	
-		
 	
 	@PostConstruct
 	public void loadData() {
@@ -75,7 +74,7 @@ public class WebHdfsDataLoaderScheduledExecutorTest extends AbstractTestNGSpring
 			.valueTranslatorType(String.class)
 			.build();
 		try {
-			for (int i = 0; i < 100; i++) {
+			for (int i = 0; i < 1000; i++) {
 				handler.write(topic, key, data);
 			}
 			handler.writerClose();
