@@ -102,6 +102,7 @@ public class EventHandlerConsumer<K, V> implements MessageConsumer<K, V>  {
 	private WebHdfsWorkFlow buildWorkFlow (AbstractHttpEntity entity) {
 		Long nextIteration = iteration.incrementAndGet();
 		log.info("nextIteration is: {}", nextIteration);
+		
 		FilePath baseDir = new FilePath.Builder()
 			.addPathSegment(webHdfsConfig.getBaseDir())
 			.addPathSegment(customDTF.format(LocalDate.now()) + 
