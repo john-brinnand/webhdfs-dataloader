@@ -47,6 +47,7 @@ public class EventHandlerJobScheduler {
 		// will be in effect and data may not be received
 		// from Kafka.
 		//************************************************
+		log.info("Building the event handler in loadData");
 		eventHandler.partition(0)
 				.keyTranslatorType(String.class)
 				.valueTranslatorType(String.class)
